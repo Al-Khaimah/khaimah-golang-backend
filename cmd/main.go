@@ -1,19 +1,14 @@
 package main
 
 import (
+	"github.com/Al-Khaimah/khaimah-golang-backend/internal/migrations"
+	"github.com/Al-Khaimah/khaimah-golang-backend/internal/routes"
 	"log"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
 	"github.com/Al-Khaimah/khaimah-golang-backend/config"
-	"github.com/Al-Khaimah/khaimah-golang-backend/migrations"
-
-	bookmarks "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/bookmarks/routes"
-	categories "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/routes"
-	notifications "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/notifications/routes"
-	podcasts "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/routes"
-	users "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/routes"
 )
 
 func main() {
@@ -25,13 +20,9 @@ func main() {
 	e.Use(middleware.RequestID())
 
 	config.Connect()
-	migrations.Migrate()
 
-	users.RegisterRoutes(e)
-	podcasts.RegisterRoutes(e)
-	notifications.RegisterRoutes(e)
-	categories.RegisterRoutes(e)
-	bookmarks.RegisterRoutes(e)
+	migrations.Migrate()
+	routes.RegisterAllRoutes(e)
 
 	port := ":8080"
 	log.Println("Server running on http://localhost:" + port)

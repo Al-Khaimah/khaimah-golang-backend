@@ -1,6 +1,0 @@
-CREATE TABLE "user" (
-    id UUID PRIMARY KEY,
-    firstName VARCHAR NOT NULL,
-    lastName VARCHAR NOT NULL,
-    email VARCHAR NOT NULL UNIQUE
-);

@@ -9,13 +9,6 @@ services:
       - "${DB_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # - ./schemas/iam_auth_schema.sql:/docker-entrypoint-initdb.d/iam_auth_schema.sql
-      # - ./schemas/user_schema.sql:/docker-entrypoint-initdb.d/user_schema.sql
-      # - ./schemas/category_schema.sql:/docker-entrypoint-initdb.d/category_schema.sql
-      # - ./schemas/user_category_schema.sql:/docker-entrypoint-initdb.d/user_category_schema.sql
-      # - ./schemas/podcast_schema.sql:/docker-entrypoint-initdb.d/podcast_schema.sql
-      # - ./schemas/user_favorite_schema.sql:/docker-entrypoint-initdb.d/user_favorite_schema.sql
-      # - ./schemas/user_podcast_schema.sql:/docker-entrypoint-initdb.d/user_podcast_schema.sql
-
+    entrypoint: ["sh", "-c", "docker-entrypoint.sh postgres & sleep 5 && psql -U ${DB_USER} -d ${DB_NAME} -c 'CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";' && wait"]
 volumes:
   postgres_data:
