@@ -11,10 +11,7 @@ Handles user authentication, profile management, and preferences.
   
 - **POST /auth/logout**  
   Logout the user (invalidate the JWT or session).
-  
-- **POST /auth/refresh-token**  
-  Refresh the authentication token.
-  
+ 
 - **GET /user/profile**  
   Fetch the current user's profile details.
   
@@ -64,26 +61,17 @@ Handles podcast-related operations such as listing, liking, playing, downloading
 - **GET /user/downloads**  
   List all podcasts the user has downloaded.
 
-- **POST /feedback**  
-  Allow users to submit feedback for the app or podcasts.
-
 - **GET /trending/podcasts**  
   List podcasts based on most likes, most played, etc.
 
----
-
-## 4. Bookmarks Module
-Handles user bookmarks for podcasts.
-
 - **GET /user/bookmarks**  
-  List all podcasts bookmarked by the user.
+  List all podcasts bookmarked by the user
 
 - **POST /user/bookmarks/{podcast_id}**  
   Toggle podcast remove and add bookmarks.
-
 ---
 
-## 5. Notifications Module
+## 4. Notifications Module
 Handles notification-related functionality for the user.
 
 - **GET /notifications**  
@@ -95,8 +83,7 @@ Handles notification-related functionality for the user.
 
 - **Users Module**: 8 endpoints
 - **Categories Module**: 3 endpoints
-- **Podcasts Module**: 8 endpoints
-- **Bookmarks Module**: 2 endpoints
+- **Podcasts Module**: 10 endpoints
 - **Notifications Module**: 1 endpoint
 
 **Total**: 21 Endpoints
