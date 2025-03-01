@@ -13,6 +13,6 @@ type User struct {
 	Email     string `gorm:"type:varchar(255);uniqueIndex" json:"email"`
 
 	Categories []categories.Category `gorm:"many2many:user_categories" json:"categories"`
-	Bookmarks  []podcasts.Podcast    `gorm:"many2many:user_bookmarks" json:"bookmarks"`
+	Bookmarks  []podcasts.Podcast    `gorm:"many2many:user_bookmarks" json:"bookmarks,omitempty"`
 	Auth       IamAuth               `gorm:"foreignKey:UserID" json:"auth"`
 }

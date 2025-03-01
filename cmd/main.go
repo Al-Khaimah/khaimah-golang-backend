@@ -1,9 +1,10 @@
 package main
 
 import (
+	"log"
+
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/migrations"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/routes"
-	"log"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -19,10 +20,13 @@ func main() {
 	e.Use(middleware.CORS())
 	e.Use(middleware.RequestID())
 
-	config.Connect()
+	db, err := config.Connect()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	migrations.Migrate()
-	routes.RegisterAllRoutes(e)
+	routes.RegisterAllRoutes(e, db)
 
 	port := ":8080"
 	log.Println("Server running on http://localhost:" + port)
