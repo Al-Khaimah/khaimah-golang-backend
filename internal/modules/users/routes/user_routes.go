@@ -24,6 +24,6 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	userGroup.GET("/profile", newUserHandler.GetUserProfile)
 	userGroup.PUT("/profile", newUserHandler.UpdateUserProfile)
 	userGroup.PATCH("/profile/password", newUserHandler.ChangePassword)
-	userGroup.GET("", newUserHandler.GetAllUsers)
+	userGroup.GET("/all-users", newUserHandler.GetAllUsers)
 	userGroup.DELETE("/:id", newUserHandler.DeleteUser)
 }
