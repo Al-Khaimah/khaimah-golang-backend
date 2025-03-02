@@ -10,11 +10,12 @@ import (
 
 func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	userRepo := userRepository.NewUserRepository(db)
-	userService := userService.NewUserService(userRepo)
-	userHandler := userHandler.NewUserHandler(userService)
+	authRepo := userRepository.NewAuthRepository(db)
+	newUserService := userService.NewUserService(userRepo, authRepo)
+	newUserHandler := userHandler.NewUserHandler(newUserService)
 
 	authGroup := e.Group("/auth")
 	// userGroup := e.Group("/user")
 
-	authGroup.POST("/signup", userHandler.CreateUser)
+	authGroup.POST("/signup", newUserHandler.CreateUser)
 }
