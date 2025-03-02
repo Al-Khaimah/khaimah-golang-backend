@@ -9,7 +9,9 @@ import (
 	repos "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/repositories"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
+	"os"
 )
 
 var jwtSecret = config.GetEnv("JWT_SECRET", "alkhaimah123")
@@ -113,6 +115,11 @@ func (s *UserService) LoginUser(user *userDTO.LoginRequestDTO) base.Response {
 		return base.SetErrorMessage("Failed to generate token", err)
 	}
 
+	userAuth.IsActive = true
+	if err := s.AuthRepo.UpdateAuth(userAuth); err != nil {
+		return base.SetErrorMessage("Failed to update authentication", err)
+	}
+
 	loginResponse := userDTO.LoginResponseDTO{
 		ID:        existingUser.ID.String(),
 		FirstName: existingUser.FirstName,
@@ -129,9 +136,34 @@ func generateJWT(user *models.User) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": user.ID.String(),
 		"email":   user.Email,
-		/*"exp":     time.Now().Add(time.Hour * 24).Unix(),*/ //if we wanted to set ExpiresAt
+		/*"exp":   time.Now().Add(time.Hour * 24).Unix(),*/ //if we wanted to set ExpiresAt
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(jwtSecret))
+	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+}
+
+func (s *UserService) LogoutUser(c echo.Context) base.Response {
+	token := c.Request().Header.Get("Authorization")
+	if token == "" {
+		return base.SetErrorMessage("Unauthorized", "No token provided")
+	}
+
+	userID, err := s.AuthRepo.ExtractUserIDFromToken(token)
+	if err != nil {
+		return base.SetErrorMessage("Invalid token", err)
+	}
+
+	authRecord, err := s.AuthRepo.FindAuthByUserID(userID)
+	if err != nil {
+		return base.SetErrorMessage("Failed to find user authentication", err)
+	}
+
+	authRecord.IsActive = false
+	err = s.AuthRepo.UpdateAuth(authRecord)
+	if err != nil {
+		return base.SetErrorMessage("Failed to logout", err)
+	}
+
+	return base.SetSuccessMessage("Successfully logged out")
 }

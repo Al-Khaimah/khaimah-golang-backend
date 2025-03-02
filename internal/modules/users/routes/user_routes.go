@@ -1,6 +1,7 @@
 package users
 
 import (
+	"github.com/Al-Khaimah/khaimah-golang-backend/internal/middlewares"
 	userHandler "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/handlers"
 	userRepository "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/repositories"
 	userService "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/services"
@@ -17,6 +18,7 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	authGroup := e.Group("/auth")
 	authGroup.POST("/signup", newUserHandler.CreateUser)
 	authGroup.POST("/login", newUserHandler.LoginUser)
+	authGroup.POST("/logout", newUserHandler.LogoutUser, middlewares.AuthMiddleware(authRepo))
 
 	// userGroup := e.Group("/user")
 

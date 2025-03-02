@@ -36,3 +36,8 @@ func (h *UserHandler) LoginUser(c echo.Context) error {
 	loginResponse := h.UserService.LoginUser(&loginDTO)
 	return c.JSON(loginResponse.HTTPStatus, loginResponse)
 }
+
+func (h *UserHandler) LogoutUser(c echo.Context) error {
+	userResponse := h.UserService.LogoutUser(c)
+	return c.JSON(userResponse.HTTPStatus, userResponse)
+}
