@@ -262,15 +262,15 @@ func (s *UserService) ChangePassword(userID string, req userDTO.ChangePasswordDT
 	return base.SetSuccessMessage("Password changed successfully")
 }
 
-func (s *UserService) GetAllUsers() base.Response {
-	users, err := s.UserRepo.GetAllUsers()
+func (s *UserService) GetAllUsers(c echo.Context) base.Response {
+	users, err := s.UserRepo.FindAllUsers()
 	if err != nil {
 		return base.SetErrorMessage("Failed to fetch users", err)
 	}
 
-	var userList []userDTO.UserProfileDTO
+	var userResponses []interface{}
 	for _, user := range users {
-		userList = append(userList, userDTO.UserProfileDTO{
+		userResponses = append(userResponses, userDTO.UserProfileDTO{
 			ID:        user.ID.String(),
 			FirstName: user.FirstName,
 			LastName:  user.LastName,
@@ -278,13 +278,25 @@ func (s *UserService) GetAllUsers() base.Response {
 		})
 	}
 
-	return base.SetData(userList, "User list retrieved successfully")
+	return base.SetDataPaginated(c, userResponses)
 }
 
 func (s *UserService) DeleteUser(userID string) base.Response {
 	uid, err := uuid.Parse(userID)
 	if err != nil {
 		return base.SetErrorMessage("Invalid User ID", err)
+	}
+
+	user, err := s.UserRepo.FindOneByID(uid)
+	if err != nil {
+		return base.SetErrorMessage("Database error", err)
+	}
+	if user == nil {
+		return base.SetErrorMessage("User not found", "No user exists with this ID")
+	}
+
+	if user.DeletedAt.Valid {
+		return base.SetErrorMessage("User already deleted", "This user account has already been removed")
 	}
 
 	err = s.UserRepo.DeleteUser(uid)
