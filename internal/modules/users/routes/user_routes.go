@@ -15,7 +15,9 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	newUserHandler := userHandler.NewUserHandler(newUserService)
 
 	authGroup := e.Group("/auth")
+	authGroup.POST("/signup", newUserHandler.CreateUser)
+	authGroup.POST("/login", newUserHandler.LoginUser)
+
 	// userGroup := e.Group("/user")
 
-	authGroup.POST("/signup", newUserHandler.CreateUser)
 }

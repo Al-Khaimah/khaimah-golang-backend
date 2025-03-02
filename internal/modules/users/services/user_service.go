@@ -1,14 +1,18 @@
 package users
 
 import (
+	"github.com/Al-Khaimah/khaimah-golang-backend/config"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
 	categories "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/models"
 	userDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/dtos"
 	models "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/models"
 	repos "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/repositories"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var jwtSecret = config.GetEnv("JWT_SECRET", "alkhaimah123")
 
 type UserService struct {
 	UserRepo *repos.UserRepository
@@ -84,4 +88,50 @@ func convertCategories(categoryIDs []string) []categories.Category {
 		categoryList[i] = category
 	}
 	return categoryList
+}
+
+func (s *UserService) LoginUser(user *userDTO.LoginRequestDTO) base.Response {
+	existingUser, err := s.UserRepo.FindOneByEmail(user.Email)
+	if err != nil {
+		return base.SetErrorMessage("Database error", err)
+	}
+	if existingUser == nil {
+		return base.SetErrorMessage("Invalid credentials", "Email not found")
+	}
+
+	userAuth, err := s.AuthRepo.FindAuthByUserID(existingUser.ID)
+	if err != nil {
+		return base.SetErrorMessage("Authentication error", err)
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(userAuth.Password), []byte(user.Password)); err != nil {
+		return base.SetErrorMessage("Invalid credentials", "Incorrect password")
+	}
+
+	token, err := generateJWT(existingUser)
+	if err != nil {
+		return base.SetErrorMessage("Failed to generate token", err)
+	}
+
+	loginResponse := userDTO.LoginResponseDTO{
+		ID:        existingUser.ID.String(),
+		FirstName: existingUser.FirstName,
+		LastName:  existingUser.LastName,
+		Email:     existingUser.Email,
+		Token:     token,
+		ExpiresAt: "never",
+	}
+
+	return base.SetData(loginResponse)
+}
+
+func generateJWT(user *models.User) (string, error) {
+	claims := jwt.MapClaims{
+		"user_id": user.ID.String(),
+		"email":   user.Email,
+		/*"exp":     time.Now().Add(time.Hour * 24).Unix(),*/ //if we wanted to set ExpiresAt
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(jwtSecret))
 }

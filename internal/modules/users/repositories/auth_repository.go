@@ -2,6 +2,7 @@ package users
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 
 	"gorm.io/gorm"
 
@@ -24,4 +25,13 @@ func (r *AuthRepository) CreateUserAuth(userAuth *models.IamAuth) error {
 		return fmt.Errorf("failed to create user: %w", result.Error)
 	}
 	return nil
+}
+
+func (r *AuthRepository) FindAuthByUserID(userID uuid.UUID) (*models.IamAuth, error) {
+	var auth models.IamAuth
+	result := r.DB.Where("user_id = ?", userID).First(&auth)
+	if result.Error != nil {
+		return nil, fmt.Errorf("failed to find authentication record: %w", result.Error)
+	}
+	return &auth, nil
 }

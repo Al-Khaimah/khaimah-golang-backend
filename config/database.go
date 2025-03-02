@@ -3,9 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
-	"os"
 
-	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -13,31 +11,25 @@ import (
 var DB *gorm.DB
 
 func Connect() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Error loading .env file, using default values")
-	}
+	LoadEnv()
 
-	dbUser := os.Getenv("DB_USER")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	dbName := os.Getenv("DB_NAME")
+	dbUser := GetEnv("DB_USER", "postgres")
+	dbPassword := GetEnv("DB_PASSWORD", "password")
+	dbHost := GetEnv("DB_HOST", "localhost")
+	dbPort := GetEnv("DB_PORT", "5432")
+	dbName := GetEnv("DB_NAME", "mydatabase")
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
-		dbHost,
-		dbUser,
-		dbPassword,
-		dbName,
-		dbPort,
+	dsn := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
+		dbHost, dbUser, dbPassword, dbName, dbPort,
 	)
 
 	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Fatalf("❌ Failed to connect to database: %v", err)
 	}
 
-	fmt.Println("Database connected successfully!")
+	log.Println("✅ Database connected successfully!")
 	DB = database
 }
 

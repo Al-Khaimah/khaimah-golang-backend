@@ -26,3 +26,13 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 	userResponse := h.UserService.CreateUser(&signupDTO)
 	return c.JSON(userResponse.HTTPStatus, userResponse)
 }
+
+func (h *UserHandler) LoginUser(c echo.Context) error {
+	var loginDTO userDTO.LoginRequestDTO
+	if res, ok := base.BindAndValidate(c, &loginDTO); !ok {
+		return c.JSON(res.HTTPStatus, res)
+	}
+
+	loginResponse := h.UserService.LoginUser(&loginDTO)
+	return c.JSON(loginResponse.HTTPStatus, loginResponse)
+}
