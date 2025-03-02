@@ -37,6 +37,7 @@ func AuthMiddleware(authRepo *repos.AuthRepository) echo.MiddlewareFunc {
 				return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "User is logged out"))
 			}
 
+			c.Set("user_id", userID.String())
 			return next(c)
 		}
 	}
