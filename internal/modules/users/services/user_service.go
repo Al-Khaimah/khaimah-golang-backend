@@ -1,8 +1,7 @@
 package users
 
 import (
-	"fmt"
-
+	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
 	categories "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/models"
 	userDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/dtos"
 	models "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/models"
@@ -16,23 +15,23 @@ type UserService struct {
 	AuthRepo *repos.AuthRepository
 }
 
-func NewUserService(userRepo *repos.UserRepository) *UserService {
+func NewUserService(userRepo *repos.UserRepository, authRepo *repos.AuthRepository) *UserService {
 	return &UserService{
 		UserRepo: userRepo,
+		AuthRepo: authRepo,
 	}
 }
 
-func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) (*userDTO.SignupResponseDTO, error) {
+func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) base.Response {
 	existingUser, err := s.UserRepo.FindOneByEmail(user.Email)
 	if err != nil {
-		return nil, fmt.Errorf("service error: %w", err)
+		return base.SetErrorMessage("Database error", err)
 	}
 	if existingUser != nil {
-		return nil, fmt.Errorf("user with email: %s exists", user.Email)
+		return base.SetErrorMessage("This email is already in use", "User already exists")
 	}
 
 	categories := convertCategories(user.Categories)
-
 	newUser := &models.User{
 		FirstName:  user.FirstName,
 		LastName:   user.LastName,
@@ -42,12 +41,16 @@ func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) (*userDTO.Signu
 
 	createdUser, err := s.UserRepo.CreateUser(newUser)
 	if err != nil {
-		return nil, fmt.Errorf("service error: %w", err)
+		return base.SetErrorMessage("Failed to create user", err)
+	}
+
+	if createdUser == nil {
+		return base.SetErrorMessage("Failed to create user", "User creation returned nil")
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, fmt.Errorf("failed to hash password: %w", err)
+		return base.SetErrorMessage("Failed to hash password", err)
 	}
 
 	newUserAuth := &models.IamAuth{
@@ -55,15 +58,25 @@ func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) (*userDTO.Signu
 		Password: string(hashedPassword),
 	}
 
-	err = s.AuthRepo.CreateUserAuth(newUserAuth)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create auth for user ID %s: %w", createdUser.ID.String(), err)
+	if err := s.AuthRepo.CreateUserAuth(newUserAuth); err != nil {
+		return base.SetErrorMessage("Failed to create user authentication", err)
 	}
 
-	// return
+	userResponse := userDTO.SignupResponseDTO{
+		ID:        createdUser.ID.String(),
+		FirstName: createdUser.FirstName,
+		LastName:  createdUser.LastName,
+		Email:     createdUser.Email,
+	}
+
+	return base.SetData(userResponse)
 }
 
 func convertCategories(categoryIDs []string) []categories.Category {
+	if categoryIDs == nil || len(categoryIDs) == 0 {
+		return []categories.Category{}
+	}
+
 	categoryList := make([]categories.Category, len(categoryIDs))
 	for i, id := range categoryIDs {
 		var category categories.Category

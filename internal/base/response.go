@@ -1,12 +1,12 @@
 package base
 
 import (
+	"log"
 	"net/http"
-
-	"github.com/labstack/echo/v4"
 )
 
 type Response struct {
+	HTTPStatus         int         `json:"-"` // will not be included in JSON response
 	MessageType        string      `json:"message_type,omitempty"`
 	MessageTitle       string      `json:"message_title,omitempty"`
 	MessageDescription string      `json:"message_description,omitempty"`
@@ -20,60 +20,38 @@ const (
 	ErrorStatus   = "error"
 )
 
-func SetData(c echo.Context, data interface{}, httpStatus ...int) error {
-	statusCode := http.StatusOK
-	if len(httpStatus) > 0 {
-		statusCode = httpStatus[0]
-	}
-
-	response := Response{
-		Data: data,
-	}
-	return c.JSON(statusCode, response)
-}
-
-func SetSuccessMessage(c echo.Context, title string, description ...string) error {
+func newResponse(httpStatus int, messageType, title string, data interface{}, errors interface{}, description ...string) Response {
 	var desc string
 	if len(description) > 0 {
 		desc = description[0]
-	} else {
-		desc = ""
 	}
 
-	response := Response{
-		MessageType:        SuccessStatus,
+	if messageType == ErrorStatus || errors != nil {
+		log.Printf("❌ ERROR: %s - %v", title, errors)
+	}
+
+	return Response{
+		HTTPStatus:         httpStatus,
+		MessageType:        messageType,
 		MessageTitle:       title,
 		MessageDescription: desc,
+		Data:               data,
+		Errors:             errors,
 	}
-	return c.JSON(http.StatusOK, response)
 }
 
-func SetErrorMessage(c echo.Context, title string, errDetails interface{}, httpStatus ...int) error {
-	statusCode := http.StatusBadRequest
-	if len(httpStatus) > 0 {
-		statusCode = httpStatus[0]
-	}
-
-	response := Response{
-		MessageType:  ErrorStatus,
-		MessageTitle: title,
-		Errors:       errDetails,
-	}
-	return c.JSON(statusCode, response)
+func SetData(data interface{}) Response {
+	return newResponse(http.StatusOK, SuccessStatus, "", data, nil)
 }
 
-func SetWarningMessage(c echo.Context, title string, description ...string) error {
-	var desc string
-	if len(description) > 0 {
-		desc = description[0]
-	} else {
-		desc = ""
-	}
+func SetSuccessMessage(title string, description ...string) Response {
+	return newResponse(http.StatusOK, SuccessStatus, title, nil, nil, description...)
+}
 
-	response := Response{
-		MessageType:        WarningStatus,
-		MessageTitle:       title,
-		MessageDescription: desc,
-	}
-	return c.JSON(http.StatusBadRequest, response)
+func SetErrorMessage(title string, errDetails interface{}) Response {
+	return newResponse(http.StatusBadRequest, ErrorStatus, title, nil, errDetails)
+}
+
+func SetWarningMessage(title string, description ...string) Response {
+	return newResponse(http.StatusConflict, WarningStatus, title, nil, nil, description...)
 }
