@@ -14,3 +14,34 @@ type SignupResponseDTO struct {
 	LastName  string `json:"last_name"`
 	Email     string `json:"email"`
 }
+
+type LoginRequestDTO struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
+}
+
+type LoginResponseDTO struct {
+	ID        string `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	Token     string `json:"token"`
+	ExpiresAt string `json:"expires_at"`
+}
+
+type UserProfileDTO struct {
+	ID        string `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+}
+
+type UpdateProfileDTO struct {
+	FirstName string `json:"first_name" validate:"omitempty"`
+	LastName  string `json:"last_name" validate:"omitempty"`
+}
+
+type ChangePasswordDTO struct {
+	OldPassword string `json:"old_password" validate:"required"`
+	NewPassword string `json:"new_password" validate:"required,min=6"`
+}

@@ -1,6 +1,7 @@
 package users
 
 import (
+	"github.com/Al-Khaimah/khaimah-golang-backend/internal/middlewares"
 	userHandler "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/handlers"
 	userRepository "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/repositories"
 	userService "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/services"
@@ -15,7 +16,14 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	newUserHandler := userHandler.NewUserHandler(newUserService)
 
 	authGroup := e.Group("/auth")
-	// userGroup := e.Group("/user")
-
 	authGroup.POST("/signup", newUserHandler.CreateUser)
+	authGroup.POST("/login", newUserHandler.LoginUser)
+	authGroup.POST("/logout", newUserHandler.LogoutUser, middlewares.AuthMiddleware(authRepo))
+
+	userGroup := e.Group("/user", middlewares.AuthMiddleware(authRepo))
+	userGroup.GET("/profile", newUserHandler.GetUserProfile)
+	userGroup.PUT("/profile", newUserHandler.UpdateUserProfile)
+	userGroup.PATCH("/profile/password", newUserHandler.ChangePassword)
+	userGroup.GET("/all-users", newUserHandler.GetAllUsers)
+	userGroup.DELETE("/:id", newUserHandler.DeleteUser)
 }

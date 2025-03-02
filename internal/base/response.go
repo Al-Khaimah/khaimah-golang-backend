@@ -1,8 +1,10 @@
 package base
 
 import (
+	"github.com/labstack/echo/v4"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type Response struct {
@@ -40,8 +42,13 @@ func newResponse(httpStatus int, messageType, title string, data interface{}, er
 	}
 }
 
-func SetData(data interface{}) Response {
-	return newResponse(http.StatusOK, SuccessStatus, "", data, nil)
+func SetData(data interface{}, title ...string) Response {
+	var tit string
+	if len(title) > 0 {
+		tit = title[0]
+	}
+
+	return newResponse(http.StatusOK, SuccessStatus, tit, data, nil)
 }
 
 func SetSuccessMessage(title string, description ...string) Response {
@@ -54,4 +61,40 @@ func SetErrorMessage(title string, errDetails interface{}) Response {
 
 func SetWarningMessage(title string, description ...string) Response {
 	return newResponse(http.StatusConflict, WarningStatus, title, nil, nil, description...)
+}
+
+func SetDataPaginated(c echo.Context, data []interface{}) Response {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	perPage, err := strconv.Atoi(c.QueryParam("perPage"))
+	if err != nil || perPage < 1 {
+		perPage = 10
+	}
+
+	totalRecords := len(data)
+	totalPages := (totalRecords + perPage - 1) / perPage
+	startIndex := (page - 1) * perPage
+	endIndex := startIndex + perPage
+
+	if startIndex > totalRecords {
+		startIndex = totalRecords
+	}
+	if endIndex > totalRecords {
+		endIndex = totalRecords
+	}
+
+	paginatedData := data[startIndex:endIndex]
+
+	responseData := map[string]interface{}{
+		"data":          paginatedData,
+		"total_records": totalRecords,
+		"total_pages":   totalPages,
+		"current_page":  page,
+		"page_size":     perPage,
+	}
+
+	return newResponse(http.StatusOK, SuccessStatus, "Success", responseData, nil)
 }
