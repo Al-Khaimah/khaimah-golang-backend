@@ -40,8 +40,13 @@ func newResponse(httpStatus int, messageType, title string, data interface{}, er
 	}
 }
 
-func SetData(data interface{}) Response {
-	return newResponse(http.StatusOK, SuccessStatus, "", data, nil)
+func SetData(data interface{}, title ...string) Response {
+	var tit string
+	if len(title) > 0 {
+		tit = title[0]
+	}
+
+	return newResponse(http.StatusOK, SuccessStatus, tit, data, nil)
 }
 
 func SetSuccessMessage(title string, description ...string) Response {
