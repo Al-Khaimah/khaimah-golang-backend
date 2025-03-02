@@ -64,7 +64,7 @@ func (r *UserRepository) UpdateUser(user *models.User) error {
 	return nil
 }
 
-func (r *UserRepository) GetAllUsers() ([]models.User, error) {
+func (r *UserRepository) FindAllUsers() ([]models.User, error) {
 	var users []models.User
 	result := r.DB.Find(&users)
 	if result.Error != nil {
