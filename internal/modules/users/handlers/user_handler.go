@@ -81,7 +81,7 @@ func (h *UserHandler) ChangePassword(c echo.Context) error {
 }
 
 func (h *UserHandler) GetAllUsers(c echo.Context) error {
-	response := h.UserService.GetAllUsers()
+	response := h.UserService.GetAllUsers(c)
 	return c.JSON(response.HTTPStatus, response)
 }
 
