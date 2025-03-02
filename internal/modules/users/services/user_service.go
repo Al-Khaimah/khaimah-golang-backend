@@ -75,7 +75,7 @@ func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) base.Response {
 		Email:     createdUser.Email,
 	}
 
-	return base.SetData(userResponse)
+	return base.SetData(userResponse, "Account created successfully")
 }
 
 func convertCategories(categoryIDs []string) []categories.Category {
@@ -129,14 +129,13 @@ func (s *UserService) LoginUser(user *userDTO.LoginRequestDTO) base.Response {
 		ExpiresAt: "never",
 	}
 
-	return base.SetData(loginResponse)
+	return base.SetData(loginResponse, "Logged in successfully")
 }
 
 func generateJWT(user *models.User) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": user.ID.String(),
 		"email":   user.Email,
-		/*"exp":   time.Now().Add(time.Hour * 24).Unix(),*/ //if we wanted to set ExpiresAt
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -166,4 +165,132 @@ func (s *UserService) LogoutUser(c echo.Context) base.Response {
 	}
 
 	return base.SetSuccessMessage("Successfully logged out")
+}
+
+func (s *UserService) GetUserProfile(userID string) base.Response {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid User ID", err)
+	}
+
+	user, err := s.UserRepo.FindOneByID(uid)
+	if err != nil {
+		return base.SetErrorMessage("Failed to fetch user profile", err)
+	}
+	if user == nil {
+		return base.SetErrorMessage("User not found", "No user exists with this ID")
+	}
+
+	profileResponse := userDTO.UserProfileDTO{
+		ID:        user.ID.String(),
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+	}
+
+	return base.SetData(profileResponse)
+}
+
+func (s *UserService) UpdateUserProfile(userID string, updateData userDTO.UpdateProfileDTO) base.Response {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid User ID", err)
+	}
+
+	user, err := s.UserRepo.FindOneByID(uid)
+	if err != nil {
+		return base.SetErrorMessage("Database error", err)
+	}
+	if user == nil {
+		return base.SetErrorMessage("User not found", "No user exists with this ID")
+	}
+
+	if updateData.FirstName != "" {
+		user.FirstName = updateData.FirstName
+	}
+	if updateData.LastName != "" {
+		user.LastName = updateData.LastName
+	}
+
+	err = s.UserRepo.UpdateUser(user)
+	if err != nil {
+		return base.SetErrorMessage("Failed to update profile", err)
+	}
+
+	profileResponse := userDTO.UserProfileDTO{
+		ID:        user.ID.String(),
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+	}
+
+	return base.SetData(profileResponse, "Profile updated successfully")
+}
+
+func (s *UserService) ChangePassword(userID string, req userDTO.ChangePasswordDTO) base.Response {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid User ID", err)
+	}
+
+	userAuth, err := s.AuthRepo.FindAuthByUserID(uid)
+	if err != nil {
+		return base.SetErrorMessage("Database error", err)
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(userAuth.Password), []byte(req.OldPassword))
+	if err != nil {
+		return base.SetErrorMessage("Invalid credentials", "Old password is incorrect")
+	}
+
+	if req.OldPassword == req.NewPassword {
+		return base.SetErrorMessage("Invalid request", "New password must be different from old password")
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return base.SetErrorMessage("Failed to hash password", err)
+	}
+
+	userAuth.Password = string(hashedPassword)
+
+	err = s.AuthRepo.UpdateAuth(userAuth)
+	if err != nil {
+		return base.SetErrorMessage("Failed to change password", err)
+	}
+
+	return base.SetSuccessMessage("Password changed successfully")
+}
+
+func (s *UserService) GetAllUsers() base.Response {
+	users, err := s.UserRepo.GetAllUsers()
+	if err != nil {
+		return base.SetErrorMessage("Failed to fetch users", err)
+	}
+
+	var userList []userDTO.UserProfileDTO
+	for _, user := range users {
+		userList = append(userList, userDTO.UserProfileDTO{
+			ID:        user.ID.String(),
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+			Email:     user.Email,
+		})
+	}
+
+	return base.SetData(userList, "User list retrieved successfully")
+}
+
+func (s *UserService) DeleteUser(userID string) base.Response {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid User ID", err)
+	}
+
+	err = s.UserRepo.DeleteUser(uid)
+	if err != nil {
+		return base.SetErrorMessage("Failed to delete user", err)
+	}
+
+	return base.SetSuccessMessage("User deleted successfully")
 }
