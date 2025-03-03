@@ -23,6 +23,7 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	userGroup := e.Group("/user", middlewares.AuthMiddleware(authRepo))
 	userGroup.GET("/profile", newUserHandler.GetUserProfile)
 	userGroup.PUT("/profile", newUserHandler.UpdateUserProfile)
+	userGroup.PATCH("/profile/preferences", newUserHandler.UpdateUserPreferences)
 	userGroup.PATCH("/profile/password", newUserHandler.ChangePassword)
 	userGroup.GET("/all-users", newUserHandler.GetAllUsers)
 	userGroup.DELETE("/:id", newUserHandler.DeleteUser)
