@@ -2,9 +2,9 @@ package middlewares
 
 import (
 	"net/http"
-	"os"
 	"strings"
 
+	"github.com/Al-Khaimah/khaimah-golang-backend/config"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
 	repos "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/repositories"
 	"github.com/labstack/echo/v4"
@@ -19,7 +19,7 @@ func AuthMiddleware(authRepo *repos.AuthRepository) echo.MiddlewareFunc {
 			}
 
 			token := strings.TrimPrefix(authHeader, "Bearer ")
-			jwtSecret := os.Getenv("JWT_SECRET")
+			jwtSecret := config.GetEnv("JWT_SECRET", "alkhaimah123")
 			if jwtSecret == "" {
 				return c.JSON(http.StatusInternalServerError, base.SetErrorMessage("Server Error", "JWT secret is missing"))
 			}

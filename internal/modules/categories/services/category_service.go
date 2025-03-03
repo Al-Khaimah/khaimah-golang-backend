@@ -19,15 +19,17 @@ func (s *CategoryService) GetCategories() base.Response {
 	if err != nil {
 		return base.SetErrorMessage("Failed to fetch categories", err)
 	}
-
-	var categoryDTOs []categoryDTO.Category
+	if len(categories) == 0 {
+		return base.SetData([]categoryDTO.Category{}, "No categories found")
+	}
+	var categoryResponse []categoryDTO.Category
 	for _, category := range categories {
-		categoryDTOs = append(categoryDTOs, categoryDTO.Category{
+		categoryResponse = append(categoryResponse, categoryDTO.Category{
 			ID:          category.ID.String(),
 			Name:        category.Name,
 			Description: category.Description,
 		})
 	}
 
-	return base.SetData(categoryDTOs, "Categories fetched successfully")
+	return base.SetData(categoryResponse, "Categories fetched successfully")
 }
