@@ -12,7 +12,7 @@ import (
 
 func RegisterAllRoutes(e *echo.Echo, db *gorm.DB) {
 	users.RegisterRoutes(e, db)
+	categories.RegisterRoutes(e, db)
 	podcasts.RegisterRoutes(e)
 	notifications.RegisterRoutes(e)
-	categories.RegisterRoutes(e)
 }
