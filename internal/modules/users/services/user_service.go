@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
-	"os"
 )
 
 var jwtSecret = config.GetEnv("JWT_SECRET", "alkhaimah123")
@@ -62,24 +61,31 @@ func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) base.Response {
 	newUserAuth := &models.IamAuth{
 		UserID:   createdUser.ID,
 		Password: string(hashedPassword),
+		IsActive: true,
 	}
 
 	if err := s.AuthRepo.CreateUserAuth(newUserAuth); err != nil {
 		return base.SetErrorMessage("Failed to create user authentication", err)
 	}
 
+	token, err := generateJWT(createdUser)
+	if err != nil {
+		return base.SetErrorMessage("Failed to generate token", err)
+	}
 	userResponse := userDTO.SignupResponseDTO{
 		ID:        createdUser.ID.String(),
 		FirstName: createdUser.FirstName,
 		LastName:  createdUser.LastName,
 		Email:     createdUser.Email,
+		Token:     token,
+		ExpiresAt: "never",
 	}
 
 	return base.SetData(userResponse, "Account created successfully")
 }
 
 func convertCategories(categoryIDs []string) []categories.Category {
-	if categoryIDs == nil || len(categoryIDs) == 0 {
+	if len(categoryIDs) == 0 {
 		return []categories.Category{}
 	}
 
@@ -139,7 +145,7 @@ func generateJWT(user *models.User) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	return token.SignedString([]byte(jwtSecret))
 }
 
 func (s *UserService) LogoutUser(c echo.Context) base.Response {
@@ -148,7 +154,7 @@ func (s *UserService) LogoutUser(c echo.Context) base.Response {
 		return base.SetErrorMessage("Unauthorized", "No token provided")
 	}
 
-	userID, err := s.AuthRepo.ExtractUserIDFromToken(token)
+	userID, err := base.ExtractUserIDFromToken(token)
 	if err != nil {
 		return base.SetErrorMessage("Invalid token", err)
 	}

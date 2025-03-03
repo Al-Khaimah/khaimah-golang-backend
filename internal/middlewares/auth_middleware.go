@@ -24,7 +24,7 @@ func AuthMiddleware(authRepo *repos.AuthRepository) echo.MiddlewareFunc {
 				return c.JSON(http.StatusInternalServerError, base.SetErrorMessage("Server Error", "JWT secret is missing"))
 			}
 
-			userID, err := authRepo.ExtractUserIDFromToken(token)
+			userID, err := base.ExtractUserIDFromToken(token)
 			if err != nil {
 				return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "Invalid token"))
 			}
