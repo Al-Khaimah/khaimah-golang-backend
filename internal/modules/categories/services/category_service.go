@@ -22,6 +22,7 @@ func (s *CategoryService) GetCategories() base.Response {
 	if len(categories) == 0 {
 		return base.SetData([]categoryDTO.Category{}, "No categories found")
 	}
+
 	var categoryResponse []categoryDTO.Category
 	for _, category := range categories {
 		categoryResponse = append(categoryResponse, categoryDTO.Category{

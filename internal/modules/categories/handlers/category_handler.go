@@ -14,6 +14,6 @@ func NewCategoryHandler(categoryService *categoryService.CategoryService) *Categ
 }
 
 func (h *CategoryHandler) GetCategories(c echo.Context) error {
-	categoriesResponse := h.CategoryService.GetCategories()
-	return c.JSON(categoriesResponse.HTTPStatus, categoriesResponse)
+	response := h.CategoryService.GetCategories()
+	return c.JSON(response.HTTPStatus, response)
 }

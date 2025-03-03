@@ -24,8 +24,8 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 		return c.JSON(res.HTTPStatus, res)
 	}
 
-	userResponse := h.UserService.CreateUser(&signupDTO)
-	return c.JSON(userResponse.HTTPStatus, userResponse)
+	response := h.UserService.CreateUser(&signupDTO)
+	return c.JSON(response.HTTPStatus, response)
 }
 
 func (h *UserHandler) LoginUser(c echo.Context) error {
@@ -34,13 +34,13 @@ func (h *UserHandler) LoginUser(c echo.Context) error {
 		return c.JSON(res.HTTPStatus, res)
 	}
 
-	loginResponse := h.UserService.LoginUser(&loginDTO)
-	return c.JSON(loginResponse.HTTPStatus, loginResponse)
+	response := h.UserService.LoginUser(&loginDTO)
+	return c.JSON(response.HTTPStatus, response)
 }
 
 func (h *UserHandler) LogoutUser(c echo.Context) error {
-	userResponse := h.UserService.LogoutUser(c)
-	return c.JSON(userResponse.HTTPStatus, userResponse)
+	response := h.UserService.LogoutUser(c)
+	return c.JSON(response.HTTPStatus, response)
 }
 
 func (h *UserHandler) GetUserProfile(c echo.Context) error {
@@ -48,8 +48,8 @@ func (h *UserHandler) GetUserProfile(c echo.Context) error {
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "Invalid or missing user ID"))
 	}
-	profileResponse := h.UserService.GetUserProfile(userID)
-	return c.JSON(profileResponse.HTTPStatus, profileResponse)
+	response := h.UserService.GetUserProfile(userID)
+	return c.JSON(response.HTTPStatus, response)
 }
 
 func (h *UserHandler) UpdateUserProfile(c echo.Context) error {
