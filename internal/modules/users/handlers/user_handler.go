@@ -66,6 +66,18 @@ func (h *UserHandler) UpdateUserProfile(c echo.Context) error {
 	return c.JSON(response.HTTPStatus, response)
 }
 
+func (h *UserHandler) UpdateUserPreferences(c echo.Context) error {
+	userID := c.Get("user_id").(string)
+
+	var preferencesDTO userDTO.UpdatePreferencesDTO
+	if res, ok := base.BindAndValidate(c, &preferencesDTO); !ok {
+		return c.JSON(res.HTTPStatus, res)
+	}
+
+	response := h.UserService.UpdateUserPreferences(userID, preferencesDTO)
+	return c.JSON(response.HTTPStatus, response)
+}
+
 func (h *UserHandler) ChangePassword(c echo.Context) error {
 	userID, ok := c.Get("user_id").(string)
 	if !ok {
