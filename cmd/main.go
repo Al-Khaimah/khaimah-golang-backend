@@ -29,6 +29,6 @@ func main() {
 	routes.RegisterAllRoutes(e, db)
 
 	port := ":8080"
-	log.Println("Server running on http://localhost" + port)
-	e.Logger.Fatal(e.Start(port))
+	log.Println("Server running on http://" + config.GetEnv("PUBLIC_IP", "0.0.0.0") + port)
+	e.Logger.Fatal(e.Start("0.0.0.0" + port))
 }
