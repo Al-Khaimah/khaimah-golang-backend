@@ -33,7 +33,7 @@ func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) base.Response {
 		return base.SetErrorMessage("Database error", err)
 	}
 	if existingUser != nil {
-		return base.SetErrorMessage("This email is already in use", "User already exists")
+		return base.SetErrorMessage("This email is already in use", "User already exists!")
 	}
 
 	categories := categories.ConvertIDsToCategories(user.Categories)
