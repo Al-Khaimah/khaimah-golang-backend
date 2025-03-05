@@ -329,7 +329,7 @@ func (s *UserService) DeleteUser(userID string) base.Response {
 	return base.SetSuccessMessage("User deleted successfully")
 }
 
-func (s *UserService) GetUserCategoriesIds(userID string) ([]string, error) {
+func (s *UserService) GetUserCategoriesIDs(userID string) ([]string, error) {
 	uid, err := uuid.Parse(userID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user id: %w", err)
@@ -343,10 +343,10 @@ func (s *UserService) GetUserCategoriesIds(userID string) ([]string, error) {
 		return nil, nil
 	}
 
-	categoryIds := make([]string, len(userCategories))
+	categoryIDs := make([]string, len(userCategories))
 	for i, userCategories := range userCategories {
-		categoryIds[i] = userCategories.ID.String()
+		categoryIDs[i] = userCategories.ID.String()
 	}
 
-	return categoryIds, nil
+	return categoryIDs, nil
 }

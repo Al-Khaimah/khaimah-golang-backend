@@ -34,7 +34,7 @@ func (h *PodcastHandler) GetAllPodcasts(c echo.Context) error {
 
 	getAllPodcastsRequestDto.BindPaginationParams(c)
 
-	podcasts, err := h.PodcastService.GetAllPodcasts(c, getAllPodcastsRequestDto)
+	podcasts, err := h.PodcastService.GetAllPodcasts(getAllPodcastsRequestDto)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -47,12 +47,12 @@ func (h *PodcastHandler) GetRecommendedPodcasts(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "Invalid or missing user ID"))
 	}
 
-	userCategoriesIds, err := h.UserService.GetUserCategoriesIds(userID)
+	userCategoriesIDs, err := h.UserService.GetUserCategoriesIDs(userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	recommendedPodcasts, err := h.PodcastService.GetRecommendedPodcasts(userID, userCategoriesIds)
+	recommendedPodcasts, err := h.PodcastService.GetRecommendedPodcasts(userID, userCategoriesIDs)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}

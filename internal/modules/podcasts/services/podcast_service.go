@@ -5,7 +5,6 @@ import (
 	podcastsDto "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/dtos"
 	podcasts "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/repositories"
 	"github.com/google/uuid"
-	"github.com/labstack/echo/v4"
 )
 
 type PodcastService struct {
@@ -17,7 +16,6 @@ func NewPodcastService(podcastRepository *podcasts.PodcastRepository) *PodcastSe
 }
 
 func (s *PodcastService) GetAllPodcasts(
-	c echo.Context,
 	getAllPodcastsRequestDto podcastsDto.GetAllPodcastsRequestDto,
 ) (base.Response, error) {
 	page := getAllPodcastsRequestDto.Page
@@ -46,15 +44,15 @@ func (s *PodcastService) GetAllPodcasts(
 	return base.SetPaginatedResponse(podcastDtos, page, perPage, totalCount), nil
 }
 
-func (s *PodcastService) GetRecommendedPodcasts(userID string, userCategoriesIds []string) (base.Response, error) {
+func (s *PodcastService) GetRecommendedPodcasts(userID string, userCategoriesIDs []string) (base.Response, error) {
 	userUUID, err := uuid.Parse(userID)
 	if err != nil {
 		return base.SetErrorMessage("Invalid user ID format", err), err
 	}
 
-	categoriesUUID := make([]uuid.UUID, len(userCategoriesIds))
-	for i, categoryId := range userCategoriesIds {
-		categoriesUUID[i], err = uuid.Parse(categoryId)
+	categoriesUUID := make([]uuid.UUID, len(userCategoriesIDs))
+	for i, categoryID := range userCategoriesIDs {
+		categoriesUUID[i], err = uuid.Parse(categoryID)
 		if err != nil {
 			return base.SetErrorMessage("Invalid category ID format", err), err
 		}
