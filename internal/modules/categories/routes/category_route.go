@@ -12,11 +12,14 @@ import (
 )
 
 func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
-	categoryRepository := categoryRepository.NewCategoryRepository(db)
-	authRepository := authRepository.NewAuthRepository(db)
-	categoryService := categoryService.NewCategoryService(categoryRepository)
-	categoryHandler := categoryHandler.NewCategoryHandler(categoryService)
+	newCategoryRepository := categoryRepository.NewCategoryRepository(db)
+	newAuthRepository := authRepository.NewAuthRepository(db)
+	newCategoryService := categoryService.NewCategoryService(newCategoryRepository)
+	newCategoryHandler := categoryHandler.NewCategoryHandler(newCategoryService)
 
-	categoryGroup := e.Group("/categories", middlewares.AuthMiddleware(authRepository))
-	categoryGroup.GET("/", categoryHandler.GetCategories)
+	categoryGroup := e.Group("/categories", middlewares.AuthMiddleware(newAuthRepository))
+	categoryGroup.GET("/", newCategoryHandler.GetCategories)
+	categoryGroup.POST("/", newCategoryHandler.CreateCategory)
+	categoryGroup.PUT("/:id", newCategoryHandler.UpdateCategory)
+	categoryGroup.DELETE("/:id", newCategoryHandler.DeleteCategory)
 }

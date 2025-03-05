@@ -3,7 +3,7 @@ package users
 import (
 	"github.com/Al-Khaimah/khaimah-golang-backend/config"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
-	categories "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/models"
+	categories "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/services"
 	userDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/dtos"
 	models "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/models"
 	repos "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/repositories"
@@ -36,7 +36,7 @@ func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) base.Response {
 		return base.SetErrorMessage("This email is already in use", "User already exists")
 	}
 
-	categories := convertCategories(user.Categories)
+	categories := categories.ConvertIDsToCategories(user.Categories)
 	newUser := &models.User{
 		FirstName:  user.FirstName,
 		LastName:   user.LastName,
@@ -82,20 +82,6 @@ func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) base.Response {
 	}
 
 	return base.SetData(userResponse, "Account created successfully")
-}
-
-func convertCategories(categoryIDs []string) []categories.Category {
-	if len(categoryIDs) == 0 {
-		return []categories.Category{}
-	}
-
-	categoryList := make([]categories.Category, len(categoryIDs))
-	for i, id := range categoryIDs {
-		var category categories.Category
-		category.ID = uuid.MustParse(id)
-		categoryList[i] = category
-	}
-	return categoryList
 }
 
 func (s *UserService) LoginUser(user *userDTO.LoginRequestDTO) base.Response {
@@ -231,6 +217,35 @@ func (s *UserService) UpdateUserProfile(userID string, updateData userDTO.Update
 	}
 
 	return base.SetData(profileResponse, "Profile updated successfully")
+}
+
+func (s *UserService) UpdateUserPreferences(userID string, updateData userDTO.UpdatePreferencesDTO) base.Response {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid User ID", err)
+	}
+
+	user, err := s.UserRepo.FindOneByID(uid)
+	if err != nil {
+		return base.SetErrorMessage("Database error", err)
+	}
+	if user == nil {
+		return base.SetErrorMessage("User not found", "No user exists with this ID")
+	}
+
+	newCategories := categories.ConvertIDsToCategories(updateData.Categories)
+	user.Categories = newCategories
+
+	err = s.UserRepo.UpdateUser(user)
+	if err != nil {
+		return base.SetErrorMessage("Failed to update preferences", err)
+	}
+
+	preferencesResponse := userDTO.UpdatePreferencesDTO{
+		Categories: categories.ConvertCategoriesToString(user.Categories),
+	}
+
+	return base.SetData(preferencesResponse, "User preferences updated successfully")
 }
 
 func (s *UserService) ChangePassword(userID string, req userDTO.ChangePasswordDTO) base.Response {
