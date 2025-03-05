@@ -3,8 +3,10 @@ package users
 import (
 	"errors"
 	"fmt"
+
 	"github.com/google/uuid"
 
+	categoryModel "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/models"
 	models "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/models"
 	"gorm.io/gorm"
 )
@@ -79,4 +81,18 @@ func (r *UserRepository) DeleteUser(userID uuid.UUID) error {
 		return fmt.Errorf("failed to delete user: %w", result.Error)
 	}
 	return nil
+}
+
+func (r *UserRepository) FindUserCategories(userID uuid.UUID) ([]categoryModel.Category, error) {
+	var user models.User
+
+	result := r.DB.Preload("Categories").First(&user, "id = ?", userID)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to fetch user: %w", result.Error)
+	}
+
+	return user.Categories, nil
 }

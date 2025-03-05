@@ -1,6 +1,8 @@
 package users
 
 import (
+	"fmt"
+
 	"github.com/Al-Khaimah/khaimah-golang-backend/config"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
 	categories "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/services"
@@ -12,8 +14,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 )
-
-var jwtSecret = config.GetEnv("JWT_SECRET", "alkhaimah123")
 
 type UserService struct {
 	UserRepo *repos.UserRepository
@@ -69,6 +69,7 @@ func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) base.Response {
 	}
 
 	token, err := generateJWT(createdUser)
+
 	if err != nil {
 		return base.SetErrorMessage("Failed to generate token", err)
 	}
@@ -125,6 +126,7 @@ func (s *UserService) LoginUser(user *userDTO.LoginRequestDTO) base.Response {
 }
 
 func generateJWT(user *models.User) (string, error) {
+	jwtSecret := config.GetEnv("JWT_SECRET", "alkhaimah123")
 	claims := jwt.MapClaims{
 		"user_id": user.ID.String(),
 		"email":   user.Email,
@@ -298,7 +300,6 @@ func (s *UserService) GetAllUsers(c echo.Context) base.Response {
 			Email:     user.Email,
 		})
 	}
-
 	return base.SetDataPaginated(c, userResponses)
 }
 
@@ -326,4 +327,26 @@ func (s *UserService) DeleteUser(userID string) base.Response {
 	}
 
 	return base.SetSuccessMessage("User deleted successfully")
+}
+
+func (s *UserService) GetUserCategoriesIds(userID string) ([]string, error) {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user id: %w", err)
+	}
+
+	userCategories, err := s.UserRepo.FindUserCategories(uid)
+	if err != nil {
+		return nil, err
+	}
+	if userCategories == nil {
+		return nil, nil
+	}
+
+	categoryIds := make([]string, len(userCategories))
+	for i, userCategories := range userCategories {
+		categoryIds[i] = userCategories.ID.String()
+	}
+
+	return categoryIds, nil
 }

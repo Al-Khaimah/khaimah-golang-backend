@@ -40,10 +40,10 @@ Handles category-related operations.
 ## 3. Podcasts Module
 Handles podcast-related operations such as listing, liking, playing, downloading podcasts, etc.
 
-- **GET /podcasts** ⏳  
+- **GET /podcasts** ✅   
   Get all podcasts paginated, will be used for the searching (top left corner in design).
 
-- **GET /podcasts/recommended** ⏳  
+- **GET /podcasts/recommended** ✅ 
   Fetch the latest 10 podcasts for each of the categories the user follows (on main page).
 
 - **GET /podcasts/category/{category_id}** ⏳  
