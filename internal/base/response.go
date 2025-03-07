@@ -105,7 +105,7 @@ func SetPaginatedResponse(data []interface{}, page, perPage, totalCount int) Res
 	totalPages := (totalCount + perPage - 1) / perPage
 
 	responseData := map[string]interface{}{
-		"data": data,
+		"items": data,
 		"pagination": map[string]interface{}{
 			"current_page": page,
 			"page_size":    perPage,

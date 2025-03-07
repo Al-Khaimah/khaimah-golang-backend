@@ -12,14 +12,21 @@ import (
 )
 
 func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
-	authRepository := userRepository.NewAuthRepository(db)
-	userRepository := userRepository.NewUserRepository(db)
-	userService := userService.NewUserService(userRepository, authRepository)
-	podcastRepository := podcastRepository.NewPodcastRepository(db)
-	podcastService := podcastService.NewPodcastService(podcastRepository)
+	authRepo := userRepository.NewAuthRepository(db)
+	userRepo := userRepository.NewUserRepository(db)
+	bookmarksRepo := userRepository.NewBookmarkRepository(db)
+
+	userService := userService.NewUserService(userRepo, authRepo, bookmarksRepo)
+
+	podcastRepo := podcastRepository.NewPodcastRepository(db)
+	podcastService := podcastService.NewPodcastService(podcastRepo)
 	podcastHandler := podcastHandler.NewPodcastHandler(podcastService, userService)
 
-	podcastGroup := e.Group("/podcasts", middlewares.AuthMiddleware(authRepository))
+	podcastGroup := e.Group("/podcasts", middlewares.AuthMiddleware(authRepo))
 	podcastGroup.GET("/", podcastHandler.GetAllPodcasts)
 	podcastGroup.GET("/recommended", podcastHandler.GetRecommendedPodcasts)
+	podcastGroup.GET("/:id", podcastHandler.GetPodcastDetails)
+	podcastGroup.POST("/:id/like", podcastHandler.LikePodcast)
+	podcastGroup.GET("/category/:category_id/", podcastHandler.GetPodcastsByCategory)
+
 }

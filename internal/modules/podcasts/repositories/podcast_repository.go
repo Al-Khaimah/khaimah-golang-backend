@@ -1,6 +1,8 @@
 package podcasts
 
 import (
+	"fmt"
+
 	podcastsModels "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -20,11 +22,11 @@ func (r *PodcastRepository) GetAllPodcasts(offset int, limit int) ([]podcastsMod
 
 	result := r.DB.Model(&podcastsModels.Podcast{}).Count(&totalCount)
 	if result.Error != nil {
-		return nil, 0, result.Error
+		return nil, 0, fmt.Errorf("failed to get all podcasts: %w", result.Error)
 	}
 	result = r.DB.Limit(limit).Offset(offset).Find(&podcasts)
 	if result.Error != nil {
-		return nil, 0, result.Error
+		return nil, 0, fmt.Errorf("failed to get all podcasts: %w", result.Error)
 	}
 
 	return podcasts, int(totalCount), nil
@@ -35,11 +37,12 @@ func (r *PodcastRepository) GetlistenedPodcastIDs(userUUID uuid.UUID) ([]uuid.UU
 	result := r.DB.Model(&podcastsModels.UserPodcast{}).
 		Where("user_id = ?", userUUID).
 		Pluck("podcast_id", &listenedPodcastIDs)
+
+	if result.Error == gorm.ErrRecordNotFound {
+		return nil, nil
+	}
 	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			return nil, nil
-		}
-		return nil, result.Error
+		return nil, fmt.Errorf("failed to get listened podcast IDs: %w", result.Error)
 	}
 	return listenedPodcastIDs, nil
 }
@@ -58,7 +61,61 @@ func (r *PodcastRepository) GetRecommendedPodcasts(
 		Find(&podcasts)
 
 	if result.Error != nil {
-		return nil, result.Error
+		return nil, fmt.Errorf("failed to get recommended podcasts: %w", result.Error)
 	}
 	return podcasts, nil
+}
+
+func (r *PodcastRepository) FindPodcastByID(podcastID uuid.UUID) (*podcastsModels.Podcast, error) {
+	var podcast podcastsModels.Podcast
+	result := r.DB.Where("id = ?", podcastID).First(&podcast)
+
+	if result.Error == gorm.ErrRecordNotFound {
+		return nil, nil
+	}
+	if result.Error != nil {
+		return nil, fmt.Errorf("failed to find podcast: %w", result.Error)
+	}
+
+	return &podcast, nil
+}
+
+func (r *PodcastRepository) IncrementLikesCount(podcastID uuid.UUID) (int, error) {
+	var podcast podcastsModels.Podcast
+	result := r.DB.Model(&podcastsModels.Podcast{}).
+		Where("id = ?", podcastID).
+		Update("likes_count", gorm.Expr("likes_count + 1")).
+		First(&podcast)
+
+	if result.Error == gorm.ErrRecordNotFound {
+		return 0, nil
+	}
+	if result.Error != nil {
+		return 0, fmt.Errorf("failed to increment likes count: %w", result.Error)
+	}
+
+	return podcast.LikesCount, nil
+}
+
+func (r *PodcastRepository) FindPodcastsByCategoryID(categoryID uuid.UUID, offset int, limit int) ([]podcastsModels.Podcast, int, error) {
+	var podcasts []podcastsModels.Podcast
+	var totalCount int64
+
+	result := r.DB.Model(&podcastsModels.Podcast{}).
+		Where("category_id = ?", categoryID).
+		Offset(offset).
+		Limit(limit).
+		Find(&podcasts)
+	if result.Error != nil {
+		return nil, 0, fmt.Errorf("failed to find podcasts by category ID: %w", result.Error)
+	}
+
+	result = r.DB.Model(&podcastsModels.Podcast{}).
+		Where("category_id = ?", categoryID).
+		Count(&totalCount)
+	if result.Error != nil {
+		return nil, 0, fmt.Errorf("failed to find podcasts by category ID: %w", result.Error)
+	}
+
+	return podcasts, int(totalCount), nil
 }

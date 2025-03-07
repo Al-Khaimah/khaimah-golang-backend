@@ -34,11 +34,11 @@ func (h *PodcastHandler) GetAllPodcasts(c echo.Context) error {
 
 	getAllPodcastsRequestDto.BindPaginationParams(c)
 
-	podcasts, err := h.PodcastService.GetAllPodcasts(getAllPodcastsRequestDto)
+	response, err := h.PodcastService.GetAllPodcasts(getAllPodcastsRequestDto)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	return c.JSON(http.StatusOK, podcasts)
+	return c.JSON(http.StatusOK, response)
 }
 
 func (h *PodcastHandler) GetRecommendedPodcasts(c echo.Context) error {
@@ -52,9 +52,53 @@ func (h *PodcastHandler) GetRecommendedPodcasts(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	recommendedPodcasts, err := h.PodcastService.GetRecommendedPodcasts(userID, userCategoriesIDs)
+	response, err := h.PodcastService.GetRecommendedPodcasts(userID, userCategoriesIDs)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	return c.JSON(http.StatusOK, recommendedPodcasts)
+	return c.JSON(http.StatusOK, response)
+}
+
+func (h *PodcastHandler) GetPodcastDetails(c echo.Context) error {
+	var getPodcastDetailsRequestDto podcastsDto.GetPodcastDetailsRequestDto
+	res, ok := base.BindAndValidate(c, &getPodcastDetailsRequestDto)
+	if !ok {
+		return c.JSON(res.HTTPStatus, res)
+	}
+
+	response, err := h.PodcastService.GetPodcastDetails(getPodcastDetailsRequestDto.ID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return c.JSON(http.StatusOK, response)
+}
+
+func (h *PodcastHandler) LikePodcast(c echo.Context) error {
+	var likePodcastRequestDto podcastsDto.LikePodcastRequestDto
+	res, ok := base.BindAndValidate(c, &likePodcastRequestDto)
+	if !ok {
+		return c.JSON(res.HTTPStatus, res)
+	}
+
+	response, err := h.PodcastService.LikePodcast(likePodcastRequestDto.ID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return c.JSON(http.StatusOK, response)
+}
+
+func (h *PodcastHandler) GetPodcastsByCategory(c echo.Context) error {
+	var getPodcastsByCategoryRequestDto podcastsDto.GetPodcastsByCategoryRequestDto
+	res, ok := base.BindAndValidate(c, &getPodcastsByCategoryRequestDto)
+	if !ok {
+		return c.JSON(res.HTTPStatus, res)
+	}
+
+	getPodcastsByCategoryRequestDto.BindPaginationParams(c)
+
+	response, err := h.PodcastService.GetPodcastsByCategory(getPodcastsByCategoryRequestDto)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return c.JSON(http.StatusOK, response)
 }

@@ -13,17 +13,21 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
+
+	podcastDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/dtos"
 )
 
 type UserService struct {
-	UserRepo *repos.UserRepository
-	AuthRepo *repos.AuthRepository
+	UserRepo      *repos.UserRepository
+	AuthRepo      *repos.AuthRepository
+	BookmarksRepo *repos.BookmarkRepository
 }
 
-func NewUserService(userRepo *repos.UserRepository, authRepo *repos.AuthRepository) *UserService {
+func NewUserService(userRepo *repos.UserRepository, authRepo *repos.AuthRepository, bookmarksRepo *repos.BookmarkRepository) *UserService {
 	return &UserService{
-		UserRepo: userRepo,
-		AuthRepo: authRepo,
+		UserRepo:      userRepo,
+		AuthRepo:      authRepo,
+		BookmarksRepo: bookmarksRepo,
 	}
 }
 
@@ -349,4 +353,32 @@ func (s *UserService) GetUserCategoriesIDs(userID string) ([]string, error) {
 	}
 
 	return categoryIDs, nil
+}
+
+func (s *UserService) GetUserBookmarks(userID string) base.Response {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid User ID", err)
+	}
+
+	bookmarks, err := s.BookmarksRepo.FindUserBookmarks(uid)
+	if err != nil {
+		return base.SetErrorMessage("Failed to fetch bookmarks", err)
+	}
+
+	bookmarksResponse := make([]interface{}, len(bookmarks))
+	for i, bookmark := range bookmarks {
+		bookmarksResponse[i] = podcastDTO.PodcastDto{
+			ID:                    bookmark.ID.String(),
+			Title:                 bookmark.Title,
+			Description:           bookmark.Description,
+			AudioURL:              bookmark.AudioURL,
+			CoverImageURL:         bookmark.CoverImageURL,
+			CoverImageDescription: bookmark.CoverImageDescription,
+			LikesCount:            bookmark.LikesCount,
+			CategoryID:            bookmark.CategoryID.String(),
+		}
+	}
+
+	return base.SetData(bookmarksResponse)
 }
