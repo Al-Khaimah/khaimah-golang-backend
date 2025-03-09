@@ -17,7 +17,7 @@ func NewPodcastService(podcastRepository *podcasts.PodcastRepository) *PodcastSe
 
 func (s *PodcastService) GetAllPodcasts(
 	getAllPodcastsRequestDto podcastsDto.GetAllPodcastsRequestDto,
-) (base.Response, error) {
+) base.Response {
 	page := getAllPodcastsRequestDto.Page
 	perPage := getAllPodcastsRequestDto.PerPage
 
@@ -26,7 +26,7 @@ func (s *PodcastService) GetAllPodcasts(
 
 	podcasts, totalCount, err := s.PodcastRepository.GetAllPodcasts(offset, limit)
 	if err != nil {
-		return base.SetErrorMessage("Failed to get podcasts", err), err
+		return base.SetErrorMessage("Failed to get podcasts", err)
 	}
 	podcastDtos := make([]interface{}, len(podcasts))
 	for i, podcast := range podcasts {
@@ -41,31 +41,31 @@ func (s *PodcastService) GetAllPodcasts(
 			CategoryID:            podcast.CategoryID.String(),
 		}
 	}
-	return base.SetPaginatedResponse(podcastDtos, page, perPage, totalCount), nil
+	return base.SetPaginatedResponse(podcastDtos, page, perPage, totalCount)
 }
 
-func (s *PodcastService) GetRecommendedPodcasts(userID string, userCategoriesIDs []string) (base.Response, error) {
+func (s *PodcastService) GetRecommendedPodcasts(userID string, userCategoriesIDs []string) base.Response {
 	userUUID, err := uuid.Parse(userID)
 	if err != nil {
-		return base.SetErrorMessage("Invalid user ID format", err), err
+		return base.SetErrorMessage("Invalid user ID format", err)
 	}
 
 	categoriesUUID := make([]uuid.UUID, len(userCategoriesIDs))
 	for i, categoryID := range userCategoriesIDs {
 		categoriesUUID[i], err = uuid.Parse(categoryID)
 		if err != nil {
-			return base.SetErrorMessage("Invalid category ID format", err), err
+			return base.SetErrorMessage("Invalid category ID format", err)
 		}
 	}
 
 	listenedPodcastIDs, err := s.PodcastRepository.GetlistenedPodcastIDs(userUUID)
 	if err != nil {
-		return base.SetErrorMessage("Failed to get listened podcast IDs", err), err
+		return base.SetErrorMessage("Failed to get listened podcast IDs", err)
 	}
 
 	recommendedPodcasts, err := s.PodcastRepository.GetRecommendedPodcasts(listenedPodcastIDs, categoriesUUID)
 	if err != nil {
-		return base.SetErrorMessage("Failed to get recommended podcasts", err), err
+		return base.SetErrorMessage("Failed to get recommended podcasts", err)
 	}
 
 	recommendedPodcastsResponseDto := make([]podcastsDto.PodcastDto, len(recommendedPodcasts))
@@ -81,18 +81,18 @@ func (s *PodcastService) GetRecommendedPodcasts(userID string, userCategoriesIDs
 			CategoryID:            podcast.CategoryID.String(),
 		}
 	}
-	return base.SetData(recommendedPodcastsResponseDto), nil
+	return base.SetData(recommendedPodcastsResponseDto)
 }
 
-func (s *PodcastService) GetPodcastDetails(podcastID string) (base.Response, error) {
+func (s *PodcastService) GetPodcastDetails(podcastID string) base.Response {
 	podcastUUID, err := uuid.Parse(podcastID)
 	if err != nil {
-		return base.SetErrorMessage("Invalid podcast ID format", err), err
+		return base.SetErrorMessage("Invalid podcast ID format", err)
 	}
 
 	podcast, err := s.PodcastRepository.FindPodcastByID(podcastUUID)
 	if err != nil {
-		return base.SetErrorMessage("Failed to get podcast details", err), err
+		return base.SetErrorMessage("Failed to get podcast details", err)
 	}
 
 	podcastDetailsDto := podcastsDto.PodcastDto{
@@ -106,18 +106,18 @@ func (s *PodcastService) GetPodcastDetails(podcastID string) (base.Response, err
 		CategoryID:            podcast.CategoryID.String(),
 	}
 
-	return base.SetData(podcastDetailsDto), nil
+	return base.SetData(podcastDetailsDto)
 }
 
-func (s *PodcastService) LikePodcast(podcastID string) (base.Response, error) {
+func (s *PodcastService) LikePodcast(podcastID string) base.Response {
 	podcastUUID, err := uuid.Parse(podcastID)
 	if err != nil {
-		return base.SetErrorMessage("Invalid podcast ID format", err), err
+		return base.SetErrorMessage("Invalid podcast ID format", err)
 	}
 
 	likeCount, err := s.PodcastRepository.IncrementLikesCount(podcastUUID)
 	if err != nil {
-		return base.SetErrorMessage("Failed to like podcast", err), err
+		return base.SetErrorMessage("Failed to like podcast", err)
 	}
 
 	likePodcastResponseDto := podcastsDto.LikePodcastResponseDto{
@@ -125,10 +125,10 @@ func (s *PodcastService) LikePodcast(podcastID string) (base.Response, error) {
 		PodcastTotalLikes: likeCount,
 	}
 
-	return base.SetData(likePodcastResponseDto), nil
+	return base.SetData(likePodcastResponseDto)
 }
 
-func (s *PodcastService) GetPodcastsByCategory(getPodcastsByCategoryRequestDto podcastsDto.GetPodcastsByCategoryRequestDto) (base.Response, error) {
+func (s *PodcastService) GetPodcastsByCategory(getPodcastsByCategoryRequestDto podcastsDto.GetPodcastsByCategoryRequestDto) base.Response {
 	categoryUUID, err := uuid.Parse(getPodcastsByCategoryRequestDto.CategoryID)
 
 	page := getPodcastsByCategoryRequestDto.Page
@@ -138,12 +138,12 @@ func (s *PodcastService) GetPodcastsByCategory(getPodcastsByCategoryRequestDto p
 	limit := perPage
 
 	if err != nil {
-		return base.SetErrorMessage("Invalid category ID format", err), err
+		return base.SetErrorMessage("Invalid category ID format", err)
 	}
 
 	podcasts, totalCount, err := s.PodcastRepository.FindPodcastsByCategoryID(categoryUUID, offset, limit)
 	if err != nil {
-		return base.SetErrorMessage("Failed to get podcasts by category ID", err), err
+		return base.SetErrorMessage("Failed to get podcasts by category ID", err)
 	}
 
 	podcastDtos := make([]interface{}, len(podcasts))
@@ -160,5 +160,5 @@ func (s *PodcastService) GetPodcastsByCategory(getPodcastsByCategoryRequestDto p
 		}
 	}
 
-	return base.SetPaginatedResponse(podcastDtos, page, perPage, totalCount), nil
+	return base.SetPaginatedResponse(podcastDtos, page, perPage, totalCount)
 }

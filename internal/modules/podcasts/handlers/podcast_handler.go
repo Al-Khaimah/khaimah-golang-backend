@@ -34,11 +34,8 @@ func (h *PodcastHandler) GetAllPodcasts(c echo.Context) error {
 
 	getAllPodcastsRequestDto.BindPaginationParams(c)
 
-	response, err := h.PodcastService.GetAllPodcasts(getAllPodcastsRequestDto)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
-	}
-	return c.JSON(http.StatusOK, response)
+	response := h.PodcastService.GetAllPodcasts(getAllPodcastsRequestDto)
+	return c.JSON(response.HTTPStatus, response)
 }
 
 func (h *PodcastHandler) GetRecommendedPodcasts(c echo.Context) error {
@@ -52,11 +49,8 @@ func (h *PodcastHandler) GetRecommendedPodcasts(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	response, err := h.PodcastService.GetRecommendedPodcasts(userID, userCategoriesIDs)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
-	}
-	return c.JSON(http.StatusOK, response)
+	response := h.PodcastService.GetRecommendedPodcasts(userID, userCategoriesIDs)
+	return c.JSON(response.HTTPStatus, response)
 }
 
 func (h *PodcastHandler) GetPodcastDetails(c echo.Context) error {
@@ -66,11 +60,8 @@ func (h *PodcastHandler) GetPodcastDetails(c echo.Context) error {
 		return c.JSON(res.HTTPStatus, res)
 	}
 
-	response, err := h.PodcastService.GetPodcastDetails(getPodcastDetailsRequestDto.ID)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
-	}
-	return c.JSON(http.StatusOK, response)
+	response := h.PodcastService.GetPodcastDetails(getPodcastDetailsRequestDto.ID)
+	return c.JSON(response.HTTPStatus, response)
 }
 
 func (h *PodcastHandler) LikePodcast(c echo.Context) error {
@@ -80,11 +71,8 @@ func (h *PodcastHandler) LikePodcast(c echo.Context) error {
 		return c.JSON(res.HTTPStatus, res)
 	}
 
-	response, err := h.PodcastService.LikePodcast(likePodcastRequestDto.ID)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
-	}
-	return c.JSON(http.StatusOK, response)
+	response := h.PodcastService.LikePodcast(likePodcastRequestDto.ID)
+	return c.JSON(response.HTTPStatus, response)
 }
 
 func (h *PodcastHandler) GetPodcastsByCategory(c echo.Context) error {
@@ -96,9 +84,6 @@ func (h *PodcastHandler) GetPodcastsByCategory(c echo.Context) error {
 
 	getPodcastsByCategoryRequestDto.BindPaginationParams(c)
 
-	response, err := h.PodcastService.GetPodcastsByCategory(getPodcastsByCategoryRequestDto)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
-	}
-	return c.JSON(http.StatusOK, response)
+	response := h.PodcastService.GetPodcastsByCategory(getPodcastsByCategoryRequestDto)
+	return c.JSON(response.HTTPStatus, response)
 }

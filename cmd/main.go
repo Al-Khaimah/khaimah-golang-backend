@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"log"
 
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
@@ -17,10 +16,6 @@ import (
 )
 
 func main() {
-	seedFlag := flag.Bool("seed", false, "Seed the database with test data")
-	clearFlag := flag.Bool("clear", false, "Clear the database before seeding")
-	flag.Parse()
-
 	e := echo.New()
 
 	e.Validator = &base.CustomValidator{Validator: validator.New()}
@@ -32,14 +27,6 @@ func main() {
 	config.Connect()
 	db := config.GetDB()
 	migrations.Migrate()
-
-	if *clearFlag {
-		migrations.ClearDatabase(db)
-	}
-
-	if *seedFlag {
-		migrations.SeedDatabase(db)
-	}
 
 	routes.RegisterAllRoutes(e, db)
 
