@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
 	"log"
+
+	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
 
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/migrations"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/routes"
@@ -26,6 +27,7 @@ func main() {
 	config.Connect()
 	db := config.GetDB()
 	migrations.Migrate()
+
 	routes.RegisterAllRoutes(e, db)
 
 	port := ":8080"

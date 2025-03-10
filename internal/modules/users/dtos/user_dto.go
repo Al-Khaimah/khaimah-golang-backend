@@ -1,6 +1,9 @@
 package users
 
-import categoryDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/dtos"
+import (
+	categoryDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/dtos"
+	podcastDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/dtos"
+)
 
 type SignupRequestDTO struct {
 	FirstName  string   `json:"first_name" validate:"required"`
@@ -55,5 +58,9 @@ type UpdatePreferencesDTO struct {
 }
 
 type UpdatePreferencesResponseDTO struct {
-	Categories categoryDTO.Category `json:"categories" validate:"required"`
+	Categories categoryDTO.Category `json:"categories"`
+}
+
+type GetUserBookmarksResponseDTO struct {
+	Podcasts []podcastDTO.PodcastDto `json:"podcasts"`
 }

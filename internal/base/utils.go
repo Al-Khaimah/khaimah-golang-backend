@@ -3,10 +3,11 @@ package base
 import (
 	"errors"
 	"fmt"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"os"
 	"strings"
+
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 func ExtractUserIDFromToken(tokenString string) (uuid.UUID, error) {

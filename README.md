@@ -24,6 +24,9 @@ Handles user authentication, profile management, and preferences.
 - **PATCH /user/profile/preferences** ✅  
   Update a user's preferences (e.g., change categories they are interested in).
 
+- **GET /user/bookmarks** ✅
+  List all podcasts bookmarked by the user.
+
 ---
 
 ## 2. Categories Module
@@ -40,19 +43,19 @@ Handles category-related operations.
 ## 3. Podcasts Module
 Handles podcast-related operations such as listing, liking, playing, downloading podcasts, etc.
 
-- **GET /podcasts** ⏳  
+- **GET /podcasts** ✅   
   Get all podcasts paginated, will be used for the searching (top left corner in design).
 
-- **GET /podcasts/recommended** ⏳  
+- **GET /podcasts/recommended** ✅ 
   Fetch the latest 10 podcasts for each of the categories the user follows (on main page).
 
-- **GET /podcasts/category/{category_id}** ⏳  
+- **GET /podcasts/category/{category_id}** ✅  
   On the main page when user scrolls to the left for the category-podcasts and click on "view All" it will get ALL podcasts for that category.
 
-- **GET /podcasts/{id}** ⏳  
+- **GET /podcasts/{id}** ✅
   Fetch podcast details by ID.
 
-- **POST /podcasts/{id}/like** ⏳  
+- **POST /podcasts/{id}/like** ✅ 
   Like a podcast (increments like count).
 
 - **POST /podcasts/{id}/play** ⏳  
@@ -66,9 +69,6 @@ Handles podcast-related operations such as listing, liking, playing, downloading
 
 - **GET /trending/podcasts** ⏳  
   List podcasts based on most likes, most played, etc.
-
-- **GET /user/bookmarks** ⏳  
-  List all podcasts bookmarked by the user.
 
 - **GET /user/history** ⏳  
   List all podcasts watched by the user.

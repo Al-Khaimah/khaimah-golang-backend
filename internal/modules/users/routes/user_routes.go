@@ -12,7 +12,8 @@ import (
 func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	userRepo := userRepository.NewUserRepository(db)
 	authRepo := userRepository.NewAuthRepository(db)
-	newUserService := userService.NewUserService(userRepo, authRepo)
+	bookmarksRepo := userRepository.NewBookmarkRepository(db)
+	newUserService := userService.NewUserService(userRepo, authRepo, bookmarksRepo)
 	newUserHandler := userHandler.NewUserHandler(newUserService)
 
 	authGroup := e.Group("/auth")
@@ -27,4 +28,5 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	userGroup.PATCH("/profile/password", newUserHandler.ChangePassword)
 	userGroup.GET("/all-users", newUserHandler.GetAllUsers)
 	userGroup.DELETE("/:id", newUserHandler.DeleteUser)
+	userGroup.GET("/bookmarks", newUserHandler.GetUserBookmarks)
 }

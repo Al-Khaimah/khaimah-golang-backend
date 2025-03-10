@@ -1,10 +1,11 @@
 package base
 
 import (
-	"github.com/labstack/echo/v4"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/labstack/echo/v4"
 )
 
 type Response struct {
@@ -63,6 +64,7 @@ func SetWarningMessage(title string, description ...string) Response {
 	return newResponse(http.StatusConflict, WarningStatus, title, nil, nil, description...)
 }
 
+// @NOTE: Preferably use SetPaginatedResponse instead since it uses post-db retrieval pagination.
 func SetDataPaginated(c echo.Context, data []interface{}) Response {
 	page, err := strconv.Atoi(c.QueryParam("page"))
 	if err != nil || page < 1 {
@@ -96,5 +98,20 @@ func SetDataPaginated(c echo.Context, data []interface{}) Response {
 		"page_size":     perPage,
 	}
 
+	return newResponse(http.StatusOK, SuccessStatus, "Success", responseData, nil)
+}
+
+func SetPaginatedResponse(data []interface{}, page, perPage, totalCount int) Response {
+	totalPages := (totalCount + perPage - 1) / perPage
+
+	responseData := map[string]interface{}{
+		"items": data,
+		"pagination": map[string]interface{}{
+			"current_page": page,
+			"page_size":    perPage,
+			"total_items":  totalCount,
+			"total_pages":  totalPages,
+		},
+	}
 	return newResponse(http.StatusOK, SuccessStatus, "Success", responseData, nil)
 }

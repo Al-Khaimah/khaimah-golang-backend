@@ -1,11 +1,12 @@
 package users
 
 import (
+	"net/http"
+
 	base "github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
 	userDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/dtos"
 	userService "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/services"
 	"github.com/labstack/echo/v4"
-	"net/http"
 )
 
 type UserHandler struct {
@@ -100,5 +101,11 @@ func (h *UserHandler) GetAllUsers(c echo.Context) error {
 func (h *UserHandler) DeleteUser(c echo.Context) error {
 	userID := c.Param("id")
 	response := h.UserService.DeleteUser(userID)
+	return c.JSON(response.HTTPStatus, response)
+}
+
+func (h *UserHandler) GetUserBookmarks(c echo.Context) error {
+	userID := c.Get("user_id").(string)
+	response := h.UserService.GetUserBookmarks(userID)
 	return c.JSON(response.HTTPStatus, response)
 }
