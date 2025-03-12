@@ -36,3 +36,7 @@ func ExtractUserIDFromToken(tokenString string) (uuid.UUID, error) {
 
 	return userID, nil
 }
+
+func FormatEmail(email string) string {
+	return strings.ToLower(strings.TrimSpace(email))
+}

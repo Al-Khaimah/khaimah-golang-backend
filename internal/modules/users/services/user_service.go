@@ -44,7 +44,7 @@ func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) base.Response {
 	newUser := &models.User{
 		FirstName:  user.FirstName,
 		LastName:   user.LastName,
-		Email:      user.Email,
+		Email:      base.FormatEmail(user.Email),
 		Categories: categories,
 	}
 
@@ -133,7 +133,7 @@ func generateJWT(user *models.User) (string, error) {
 	jwtSecret := config.GetEnv("JWT_SECRET", "alkhaimah123")
 	claims := jwt.MapClaims{
 		"user_id": user.ID.String(),
-		"email":   user.Email,
+		"email":   base.FormatEmail(user.Email),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
