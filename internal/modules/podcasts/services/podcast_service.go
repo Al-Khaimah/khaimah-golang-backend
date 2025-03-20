@@ -15,9 +15,7 @@ func NewPodcastService(podcastRepository *podcasts.PodcastRepository) *PodcastSe
 	return &PodcastService{PodcastRepository: podcastRepository}
 }
 
-func (s *PodcastService) GetAllPodcasts(
-	getAllPodcastsRequestDto podcastsDto.GetAllPodcastsRequestDto,
-) base.Response {
+func (s *PodcastService) GetAllPodcasts(getAllPodcastsRequestDto podcastsDto.GetAllPodcastsRequestDto) base.Response {
 	page := getAllPodcastsRequestDto.Page
 	perPage := getAllPodcastsRequestDto.PerPage
 
