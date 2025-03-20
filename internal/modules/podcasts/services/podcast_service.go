@@ -56,7 +56,7 @@ func (s *PodcastService) GetRecommendedPodcasts(userID string, userCategoriesIDs
 		}
 	}
 
-	listenedPodcastIDs, err := s.PodcastRepository.GetlistenedPodcastIDs(userUUID)
+	listenedPodcastIDs, err := s.PodcastRepository.GetListenedPodcastIDs(userUUID)
 	if err != nil {
 		return base.SetErrorMessage("Failed to get listened podcast IDs", err)
 	}

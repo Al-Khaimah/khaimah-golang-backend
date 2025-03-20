@@ -15,10 +15,7 @@ type PodcastHandler struct {
 	UserService    *userService.UserService
 }
 
-func NewPodcastHandler(
-	podcastService *podcasts.PodcastService,
-	userService *userService.UserService,
-) *PodcastHandler {
+func NewPodcastHandler(podcastService *podcasts.PodcastService, userService *userService.UserService) *PodcastHandler {
 	return &PodcastHandler{
 		PodcastService: podcastService,
 		UserService:    userService,
