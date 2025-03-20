@@ -11,6 +11,10 @@ type CustomValidator struct {
 	Validator *validator.Validate
 }
 
+func RegisterValidator(e *echo.Echo) {
+	e.Validator = &CustomValidator{Validator: validator.New()}
+}
+
 func (cv *CustomValidator) Validate(i interface{}) error {
 	return cv.Validator.Struct(i)
 }

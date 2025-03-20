@@ -15,9 +15,7 @@ func NewPodcastService(podcastRepository *podcasts.PodcastRepository) *PodcastSe
 	return &PodcastService{PodcastRepository: podcastRepository}
 }
 
-func (s *PodcastService) GetAllPodcasts(
-	getAllPodcastsRequestDto podcastsDto.GetAllPodcastsRequestDto,
-) base.Response {
+func (s *PodcastService) GetAllPodcasts(getAllPodcastsRequestDto podcastsDto.GetAllPodcastsRequestDto) base.Response {
 	page := getAllPodcastsRequestDto.Page
 	perPage := getAllPodcastsRequestDto.PerPage
 
@@ -58,7 +56,7 @@ func (s *PodcastService) GetRecommendedPodcasts(userID string, userCategoriesIDs
 		}
 	}
 
-	listenedPodcastIDs, err := s.PodcastRepository.GetlistenedPodcastIDs(userUUID)
+	listenedPodcastIDs, err := s.PodcastRepository.GetListenedPodcastIDs(userUUID)
 	if err != nil {
 		return base.SetErrorMessage("Failed to get listened podcast IDs", err)
 	}
