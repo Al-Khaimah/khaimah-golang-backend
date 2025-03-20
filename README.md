@@ -1,3 +1,19 @@
+# Al-Khaimah Golang Backend
+
+
+### Starting the Server
+To start the server, run:
+```bash
+bash start-alkhaimah.sh
+```
+logs can be found in the file: alkhaimah.log.
+
+### Stopping the Server
+To stop the server, run:
+```bash
+sudo pkill -f alkhaimah
+```
+
 # API Endpoints
 
 ## 1. Users Module
