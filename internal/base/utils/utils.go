@@ -3,11 +3,13 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"github.com/Al-Khaimah/khaimah-golang-backend/config"
-	models "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/models"
-	categories "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/repositories"
 	"os"
 	"strings"
+
+	"github.com/Al-Khaimah/khaimah-golang-backend/config"
+	base "github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
+	models "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/models"
+	categories "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/repositories"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -71,4 +73,14 @@ func ConvertIDsToCategories(categoryIDs []string) []models.Category {
 	}
 
 	return categoryList
+}
+
+func ExtractAndSetErrorMessage(err error) base.Response {
+	parts := strings.Split(err.Error(), ": ")
+	if len(parts) >= 2 {
+		errorTitle := parts[0]
+		errorDetails := strings.Join(parts[1:], ": ")
+		return base.SetErrorMessage(errorTitle, errorDetails)
+	}
+	return base.SetErrorMessage("Error", err.Error())
 }

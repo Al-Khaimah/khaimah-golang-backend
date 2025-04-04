@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	base "github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
+	utils "github.com/Al-Khaimah/khaimah-golang-backend/internal/base/utils"
 	userDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/dtos"
 	userService "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/services"
 	"github.com/labstack/echo/v4"
@@ -35,8 +36,14 @@ func (h *UserHandler) LoginUser(c echo.Context) error {
 		return c.JSON(res.HTTPStatus, res)
 	}
 
-	response := h.UserService.LoginUser(&loginDTO)
-	return c.JSON(response.HTTPStatus, response)
+	response, err := h.UserService.LoginUser(&loginDTO)
+	if err != nil {
+		errResponse := utils.ExtractAndSetErrorMessage(err)
+		return c.JSON(errResponse.HTTPStatus, errResponse)
+	}
+
+	successResponse := base.SetData(response, "Logged in successfully")
+	return c.JSON(successResponse.HTTPStatus, successResponse)
 }
 
 func (h *UserHandler) LogoutUser(c echo.Context) error {

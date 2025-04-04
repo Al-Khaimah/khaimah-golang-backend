@@ -2,6 +2,7 @@ package users
 
 import (
 	"fmt"
+
 	"github.com/Al-Khaimah/khaimah-golang-backend/config"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base/utils"
@@ -89,32 +90,32 @@ func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) base.Response {
 	return base.SetData(userResponse, "Account created successfully")
 }
 
-func (s *UserService) LoginUser(user *userDTO.LoginRequestDTO) base.Response {
+func (s *UserService) LoginUser(user *userDTO.LoginRequestDTO) (*userDTO.LoginResponseDTO, error) {
 	existingUser, err := s.UserRepo.FindOneByEmail(user.Email)
 	if err != nil {
-		return base.SetErrorMessage("Database error", err)
+		return nil, fmt.Errorf("database error: %w", err)
 	}
 	if existingUser == nil {
-		return base.SetErrorMessage("Invalid credentials", "Email not found")
+		return nil, fmt.Errorf("invalid credentials: %s", "Email not found")
 	}
 
 	userAuth, err := s.AuthRepo.FindAuthByUserID(existingUser.ID)
 	if err != nil {
-		return base.SetErrorMessage("Authentication error", err)
+		return nil, fmt.Errorf("authentication error: %w", err)
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(userAuth.Password), []byte(user.Password)); err != nil {
-		return base.SetErrorMessage("Invalid credentials", "Incorrect password")
+		return nil, fmt.Errorf("invalid credentials: %w", err)
 	}
 
 	token, err := generateJWT(existingUser)
 	if err != nil {
-		return base.SetErrorMessage("Failed to generate token", err)
+		return nil, fmt.Errorf("failed to generate token: %w", err)
 	}
 
 	userAuth.IsActive = true
 	if err := s.AuthRepo.UpdateAuth(userAuth); err != nil {
-		return base.SetErrorMessage("Failed to update authentication", err)
+		return nil, fmt.Errorf("failed to update authentication: %w", err)
 	}
 
 	loginResponse := userDTO.LoginResponseDTO{
@@ -126,7 +127,7 @@ func (s *UserService) LoginUser(user *userDTO.LoginRequestDTO) base.Response {
 		ExpiresAt: "never",
 	}
 
-	return base.SetData(loginResponse, "Logged in successfully")
+	return &loginResponse, nil
 }
 
 func generateJWT(user *models.User) (string, error) {
