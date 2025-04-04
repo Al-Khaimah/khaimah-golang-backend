@@ -2,10 +2,9 @@ package users
 
 import (
 	"fmt"
-
 	"github.com/Al-Khaimah/khaimah-golang-backend/config"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
-	categories "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/services"
+	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base/utils"
 	userDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/dtos"
 	models "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/models"
 	repos "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/repositories"
@@ -40,11 +39,11 @@ func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) base.Response {
 		return base.SetErrorMessage("This email is already in use", "User already exists")
 	}
 
-	categories := categories.ConvertIDsToCategories(user.Categories)
+	categories := utils.ConvertIDsToCategories(user.Categories)
 	newUser := &models.User{
 		FirstName:  user.FirstName,
 		LastName:   user.LastName,
-		Email:      base.FormatEmail(user.Email),
+		Email:      utils.FormatEmail(user.Email),
 		Categories: categories,
 	}
 
@@ -78,12 +77,13 @@ func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) base.Response {
 		return base.SetErrorMessage("Failed to generate token", err)
 	}
 	userResponse := userDTO.SignupResponseDTO{
-		ID:        createdUser.ID.String(),
-		FirstName: createdUser.FirstName,
-		LastName:  createdUser.LastName,
-		Email:     createdUser.Email,
-		Token:     token,
-		ExpiresAt: "never",
+		ID:         createdUser.ID.String(),
+		FirstName:  createdUser.FirstName,
+		LastName:   createdUser.LastName,
+		Email:      createdUser.Email,
+		Categories: createdUser.Categories,
+		Token:      token,
+		ExpiresAt:  "never",
 	}
 
 	return base.SetData(userResponse, "Account created successfully")
@@ -133,7 +133,7 @@ func generateJWT(user *models.User) (string, error) {
 	jwtSecret := config.GetEnv("JWT_SECRET", "alkhaimah123")
 	claims := jwt.MapClaims{
 		"user_id": user.ID.String(),
-		"email":   base.FormatEmail(user.Email),
+		"email":   utils.FormatEmail(user.Email),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -146,7 +146,7 @@ func (s *UserService) LogoutUser(c echo.Context) base.Response {
 		return base.SetErrorMessage("Unauthorized", "No token provided")
 	}
 
-	userID, err := base.ExtractUserIDFromToken(token)
+	userID, err := utils.ExtractUserIDFromToken(token)
 	if err != nil {
 		return base.SetErrorMessage("Invalid token", err)
 	}
@@ -239,7 +239,7 @@ func (s *UserService) UpdateUserPreferences(userID string, updateData userDTO.Up
 		return base.SetErrorMessage("User not found", "No user exists with this ID")
 	}
 
-	newCategories := categories.ConvertIDsToCategories(updateData.Categories)
+	newCategories := utils.ConvertIDsToCategories(updateData.Categories)
 	user.Categories = newCategories
 
 	err = s.UserRepo.UpdateUser(user)
@@ -248,7 +248,7 @@ func (s *UserService) UpdateUserPreferences(userID string, updateData userDTO.Up
 	}
 
 	preferencesResponse := userDTO.UpdatePreferencesDTO{
-		Categories: categories.ConvertCategoriesToString(user.Categories),
+		Categories: utils.ConvertCategoriesToString(user.Categories),
 	}
 
 	return base.SetData(preferencesResponse, "User preferences updated successfully")
