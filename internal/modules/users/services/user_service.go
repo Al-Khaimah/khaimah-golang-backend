@@ -105,7 +105,7 @@ func (s *UserService) LoginUser(user *userDTO.LoginRequestDTO) (*userDTO.LoginRe
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(userAuth.Password), []byte(user.Password)); err != nil {
-		return nil, fmt.Errorf("invalid credentials: %w", err)
+		return nil, fmt.Errorf("invalid credentials: %s", "incorrect password")
 	}
 
 	token, err := generateJWT(existingUser)
