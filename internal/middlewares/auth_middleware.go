@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base/utils"
 	"net/http"
 	"strings"
 
@@ -24,7 +25,7 @@ func AuthMiddleware(authRepo *repos.AuthRepository) echo.MiddlewareFunc {
 				return c.JSON(http.StatusInternalServerError, base.SetErrorMessage("Server Error", "JWT secret is missing"))
 			}
 
-			userID, err := base.ExtractUserIDFromToken(token)
+			userID, err := utils.ExtractUserIDFromToken(token)
 			if err != nil {
 				return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "Invalid token"))
 			}
