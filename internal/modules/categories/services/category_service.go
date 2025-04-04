@@ -117,25 +117,3 @@ func (s *CategoryService) DeleteCategory(categoryID string) base.Response {
 
 	return base.SetSuccessMessage("Category deleted successfully")
 }
-
-func ConvertCategoriesToString(categories []models.Category) []string {
-	categoryIDs := make([]string, len(categories))
-	for i, category := range categories {
-		categoryIDs[i] = category.ID.String()
-	}
-	return categoryIDs
-}
-
-func ConvertIDsToCategories(categoryIDs []string) []models.Category {
-	if len(categoryIDs) == 0 {
-		return []models.Category{}
-	}
-
-	categoryList := make([]models.Category, len(categoryIDs))
-	for i, id := range categoryIDs {
-		var category models.Category
-		category.ID = uuid.MustParse(id)
-		categoryList[i] = category
-	}
-	return categoryList
-}
