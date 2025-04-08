@@ -74,8 +74,8 @@ Handles podcast-related operations such as listing, liking, playing, downloading
 - **POST /podcasts/{id}/like** ✅ 
   Like a podcast (increments like count).
 
-- **POST /podcasts/{id}/play** ⏳  
-  Track podcast play count or add it to the user's history.
+- **POST /user/bookmarks/{podcast_id}** ⏳  
+  Toggle podcast remove and add bookmarks.
 
 - **POST /podcasts/{id}/download** ⏳  
   Allow users to download a podcast.
@@ -83,14 +83,14 @@ Handles podcast-related operations such as listing, liking, playing, downloading
 - **GET /user/downloads** ⏳  
   List all podcasts the user has downloaded.
 
-- **GET /trending/podcasts** ⏳  
-  List podcasts based on most likes, most played, etc.
+- **POST /podcasts/{id}/play** ⏳  
+  Track podcast play count or add it to the user's history.
 
 - **GET /user/history** ⏳  
   List all podcasts watched by the user.
 
-- **POST /user/bookmarks/{podcast_id}** ⏳  
-  Toggle podcast remove and add bookmarks.
+- **GET /trending/podcasts** ⏳  
+  List podcasts based on most likes, most played, etc.
 
 ---
 
