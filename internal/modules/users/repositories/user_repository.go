@@ -3,6 +3,7 @@ package users
 import (
 	"errors"
 	"fmt"
+	podcastModel "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/models"
 
 	"github.com/google/uuid"
 
@@ -95,4 +96,14 @@ func (r *UserRepository) FindUserCategories(userID uuid.UUID) ([]categoryModel.C
 	}
 
 	return user.Categories, nil
+}
+
+func (r *UserRepository) FindDownloadedPodcasts(userID uuid.UUID) ([]podcastModel.Podcast, error) {
+	var podcasts []podcastModel.Podcast
+	err := r.DB.
+		Joins("JOIN user_podcasts ON user_podcasts.podcast_id = podcasts.id").
+		Where("user_podcasts.user_id = ? AND user_podcasts.is_downloaded = ?", userID, true).
+		Find(&podcasts).Error
+
+	return podcasts, err
 }
