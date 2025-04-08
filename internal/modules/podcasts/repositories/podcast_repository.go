@@ -2,7 +2,6 @@ package podcasts
 
 import (
 	"fmt"
-
 	podcastsModels "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -115,4 +114,29 @@ func (r *PodcastRepository) FindPodcastsByCategoryID(categoryID uuid.UUID, offse
 	}
 
 	return podcasts, int(totalCount), nil
+}
+
+func (r *PodcastRepository) MarkPodcastAsDownloaded(userID, podcastID uuid.UUID) error {
+	var record podcastsModels.UserPodcast
+	result := r.DB.Where("user_id = ? AND podcast_id = ?", userID, podcastID).First(&record)
+	podcast, err := r.FindPodcastByID(podcastID)
+	if err != nil {
+		return fmt.Errorf("Failed to get podcast details", err)
+	}
+
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			record = podcastsModels.UserPodcast{
+				UserID:       userID,
+				PodcastID:    podcastID,
+				CategoryID:   podcast.CategoryID,
+				IsDownloaded: true,
+			}
+			return r.DB.Create(&record).Error
+		}
+		return result.Error
+	}
+
+	record.IsDownloaded = true
+	return r.DB.Save(&record).Error
 }
