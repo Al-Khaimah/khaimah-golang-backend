@@ -114,7 +114,7 @@ func (s *PodcastService) LikePodcast(podcastID string) base.Response {
 	}
 
 	likeCount, err := s.PodcastRepository.IncrementLikesCount(podcastUUID)
-	if err != nil {
+	if err != nil || likeCount == 0 {
 		return base.SetErrorMessage("Failed to like podcast", err)
 	}
 
