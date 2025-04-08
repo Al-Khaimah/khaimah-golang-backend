@@ -74,7 +74,7 @@ Handles podcast-related operations such as listing, liking, playing, downloading
 - **POST /podcasts/{id}/like** ✅ 
   Like a podcast (increments like count).
 
-- **POST /user/bookmarks/{podcast_id}** ⏳  
+- **POST /user/bookmarks/{podcast_id}** ✅
   Toggle podcast remove and add bookmarks.
 
 - **POST /podcasts/{id}/download** ⏳  
