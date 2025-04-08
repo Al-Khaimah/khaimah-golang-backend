@@ -28,10 +28,6 @@ type GetPodcastDetailsRequestDto struct {
 	ID string `json:"id" param:"id" validate:"required,uuid" message:"ID must be a valid ID format"`
 }
 
-type LikePodcastRequestDto struct {
-	ID string `json:"id" param:"id" validate:"required,uuid" message:"ID must be a valid ID format"`
-}
-
 type LikePodcastResponseDto struct {
 	PodcastID         string `json:"podcast_id"`
 	PodcastTotalLikes int    `json:"podcast_total_likes"`
