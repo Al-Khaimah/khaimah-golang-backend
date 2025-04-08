@@ -100,12 +100,22 @@ func (h *UserHandler) GetAllUsers(c echo.Context) error {
 
 func (h *UserHandler) DeleteUser(c echo.Context) error {
 	userID := c.Param("id")
+
 	response := h.UserService.DeleteUser(userID)
 	return c.JSON(response.HTTPStatus, response)
 }
 
 func (h *UserHandler) GetUserBookmarks(c echo.Context) error {
 	userID := c.Get("user_id").(string)
+
 	response := h.UserService.GetUserBookmarks(userID)
+	return c.JSON(response.HTTPStatus, response)
+}
+
+func (h *UserHandler) ToggleBookmarkPodcast(c echo.Context) error {
+	userID := c.Get("user_id").(string)
+	podcastID := c.Param("podcast_id")
+
+	response := h.UserService.ToggleBookmarkPodcast(userID, podcastID)
 	return c.JSON(response.HTTPStatus, response)
 }
