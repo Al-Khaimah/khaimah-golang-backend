@@ -382,3 +382,31 @@ func (s *UserService) GetUserBookmarks(userID string) base.Response {
 
 	return base.SetData(bookmarksResponse)
 }
+
+func (s *UserService) GetDownloadedPodcasts(userID string) base.Response {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid user ID", err)
+	}
+
+	downloads, err := s.UserRepo.FindDownloadedPodcasts(uid)
+	if err != nil {
+		return base.SetErrorMessage("Failed to fetch downloads", err)
+	}
+
+	response := make([]interface{}, len(downloads))
+	for i, podcast := range downloads {
+		response[i] = podcastDTO.PodcastDto{
+			ID:                    podcast.ID.String(),
+			Title:                 podcast.Title,
+			Description:           podcast.Description,
+			AudioURL:              podcast.AudioURL,
+			CoverImageURL:         podcast.CoverImageURL,
+			CoverImageDescription: podcast.CoverImageDescription,
+			LikesCount:            podcast.LikesCount,
+			CategoryID:            podcast.CategoryID.String(),
+		}
+	}
+
+	return base.SetData(response)
+}
