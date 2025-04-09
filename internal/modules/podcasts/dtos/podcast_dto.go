@@ -11,6 +11,9 @@ type PodcastDto struct {
 	CoverImageDescription string `json:"cover_image_description"`
 	LikesCount            int    `json:"likes_count"`
 	CategoryID            string `json:"category_id"`
+	IsDownloaded          bool   `json:"is_downloaded"`
+	IsBookmarked          bool   `json:"is_bookmarked"`
+	IsCompleted           bool   `json:"is_completed"`
 	CreatedAt             string `json:"created_at,omitempty"`
 	UpdatedAt             string `json:"updated_at,omitempty"`
 	DeletedAt             string `json:"deleted_at,omitempty"`
