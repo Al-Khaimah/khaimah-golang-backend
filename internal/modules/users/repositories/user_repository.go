@@ -99,11 +99,15 @@ func (r *UserRepository) FindUserCategories(userID uuid.UUID) ([]categoryModel.C
 }
 
 func (r *UserRepository) FindDownloadedPodcasts(userID uuid.UUID) ([]podcastModel.Podcast, error) {
-	var podcasts []podcastModel.Podcast
-	err := r.DB.
-		Joins("JOIN user_podcasts ON user_podcasts.podcast_id = podcasts.id").
-		Where("user_podcasts.user_id = ? AND user_podcasts.is_downloaded = ?", userID, true).
-		Find(&podcasts).Error
+	var user models.User
 
-	return podcasts, err
+	result := r.DB.Where("id = ?", userID).Preload("Downloads").First(&user)
+	if result.Error == gorm.ErrRecordNotFound {
+		return []podcastModel.Podcast{}, nil
+	}
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return user.Downloads, nil
 }
