@@ -411,6 +411,5 @@ func (s *UserService) ToggleBookmarkPodcast(userID, podcastID string) base.Respo
 		return base.SetErrorMessage("Failed to toggle bookmark", err)
 	}
 
-	fmt.Println(action)
 	return base.SetSuccessMessage("Bookmark " + action + " successfully")
 }
