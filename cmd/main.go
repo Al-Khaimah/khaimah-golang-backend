@@ -20,6 +20,7 @@ func main() {
 	config.Connect()
 	db := config.GetDB()
 	migrations.Migrate()
+	migrations.SeedDatabase(db)
 
 	routes.RegisterAllRoutes(e, db)
 
