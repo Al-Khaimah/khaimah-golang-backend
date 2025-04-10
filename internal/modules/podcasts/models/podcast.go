@@ -25,3 +25,12 @@ type UserPodcast struct {
 	IsCompleted    bool      `gorm:"default:false" json:"is_completed"`
 	IsDownloaded   bool      `gorm:"default:false" json:"is_downloaded"`
 }
+
+type BookmarkPodcast struct {
+	UserID    uuid.UUID `gorm:"primaryKey;type:uuid"`
+	PodcastID uuid.UUID `gorm:"primaryKey;type:uuid"`
+}
+
+func (BookmarkPodcast) TableName() string {
+	return "user_bookmarks" //by default it will be named 'user_bookmarks'
+}

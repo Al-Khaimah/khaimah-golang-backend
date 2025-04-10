@@ -31,3 +31,29 @@ func (r *BookmarkRepository) FindUserBookmarks(userID uuid.UUID) ([]podcastModel
 
 	return user.Bookmarks, nil
 }
+
+func (r *BookmarkRepository) IsBookmarked(userID, podcastID uuid.UUID) (bool, error) {
+	var bookmark podcastModel.BookmarkPodcast
+	err := r.DB.Where("user_id = ? AND podcast_id = ?", userID, podcastID).First(&bookmark).Error
+
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *BookmarkRepository) AddBookmark(userID, podcastID uuid.UUID) error {
+	bookmark := podcastModel.BookmarkPodcast{
+		UserID:    userID,
+		PodcastID: podcastID,
+	}
+	return r.DB.Create(&bookmark).Error
+}
+
+func (r *BookmarkRepository) RemoveBookmark(userID, podcastID uuid.UUID) error {
+	return r.DB.Where("user_id = ? AND podcast_id = ?", userID, podcastID).Delete(&podcastModel.BookmarkPodcast{}).Error
+}
