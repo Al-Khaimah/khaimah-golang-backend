@@ -160,3 +160,22 @@ func (s *PodcastService) GetPodcastsByCategory(getPodcastsByCategoryRequestDto p
 
 	return base.SetPaginatedResponse(podcastDtos, page, perPage, totalCount)
 }
+
+func (s *PodcastService) DownloadPodcast(userID, podcastID string) base.Response {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid user ID", err)
+	}
+
+	pid, err := uuid.Parse(podcastID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid podcast ID", err)
+	}
+
+	err = s.PodcastRepository.MarkPodcastAsDownloaded(uid, pid)
+	if err != nil {
+		return base.SetErrorMessage("Failed to mark podcast as downloaded", err)
+	}
+
+	return base.SetSuccessMessage("Podcast marked as downloaded")
+}

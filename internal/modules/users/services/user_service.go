@@ -5,6 +5,7 @@ import (
 	"github.com/Al-Khaimah/khaimah-golang-backend/config"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base/utils"
+	podcastRepository "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/repositories"
 	userDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/dtos"
 	models "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/models"
 	repos "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/repositories"
@@ -381,4 +382,24 @@ func (s *UserService) GetUserBookmarks(userID string) base.Response {
 	}
 
 	return base.SetData(bookmarksResponse)
+}
+
+func (s *UserService) GetDownloadedPodcasts(userID string) base.Response {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid User ID", err)
+	}
+
+	downloads, err := s.UserRepo.FindDownloadedPodcasts(uid)
+	if err != nil {
+		return base.SetErrorMessage("Failed to fetch downloaded podcasts", err)
+	}
+
+	response := make([]interface{}, len(downloads))
+	podcastRepo := podcastRepository.NewPodcastRepository(config.GetDB())
+	for i, podcast := range downloads {
+		response[i] = podcastRepo.MapToPodcastDTO(podcast, uid)
+	}
+
+	return base.SetData(response)
 }

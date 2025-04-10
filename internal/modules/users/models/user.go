@@ -14,5 +14,6 @@ type User struct {
 
 	Categories []categories.Category `gorm:"many2many:user_categories" json:"categories"`
 	Bookmarks  []podcasts.Podcast    `gorm:"many2many:user_bookmarks" json:"bookmarks,omitempty"`
+	Downloads  []podcasts.Podcast    `gorm:"many2many:user_downloads" json:"downloads,omitempty"`
 	Auth       IamAuth               `gorm:"foreignKey:UserID" json:"auth"`
 }
