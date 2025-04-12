@@ -50,3 +50,5 @@ else
 fi
 
 echo "✅ Al-Khaimah is running. View logs with: tail -f alkhaimah.log"
+
+tail -f alkhaimah.log
