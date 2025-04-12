@@ -118,12 +118,13 @@ func (s *UserService) LoginUser(user *userDTO.LoginRequestDTO) base.Response {
 	}
 
 	loginResponse := userDTO.LoginResponseDTO{
-		ID:        existingUser.ID.String(),
-		FirstName: existingUser.FirstName,
-		LastName:  existingUser.LastName,
-		Email:     existingUser.Email,
-		Token:     token,
-		ExpiresAt: "never",
+		ID:         existingUser.ID.String(),
+		FirstName:  existingUser.FirstName,
+		LastName:   existingUser.LastName,
+		Email:      existingUser.Email,
+		Categories: existingUser.Categories,
+		Token:      token,
+		ExpiresAt:  "never",
 	}
 
 	return base.SetData(loginResponse, "Logged in successfully")
