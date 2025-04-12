@@ -2,38 +2,42 @@
 
 echo "🚀 Starting Al-Khaimah Application..."
 
-# 1. Stash any local changes
-echo "📦 Stashing local changes..."
-git stash --include-untracked
+# Helper: Check if .env contains IP_ADDRESS (server mode)
+IS_SERVER=$(grep -E '^IP_ADDRESS=' .env | awk -F= '{print $2}' | xargs)
 
-# 2. Pull the latest changes from GitHub
-echo "📥 Pulling latest changes from GitHub..."
-git pull origin master
+if [[ -n "$IS_SERVER" ]]; then
+  # 🖥 Server mode (Git operations only)
+  echo "📦 Stashing local changes..."
+  git stash --include-untracked
 
-# 3. Start PostgreSQL via Docker (if any)
-echo "🐘 Starting PostgreSQL Docker service (if any)..."
-docker-compose up -d
+  echo "📥 Pulling latest changes from GitHub..."
+  git pull origin master
+else
+  # 💻 Local development mode (Docker services only)
+  echo "🐘 Starting PostgreSQL Docker service..."
+  docker-compose up -d
+fi
 
-# 4. Tidy Go modules
+# 📦 Common Steps (Both Server & Local)
 echo "📦 Tidying Go modules..."
 go mod tidy
 
-# 5. Stop existing Go server
-echo "🛑 Stopping existing server (if running)..."
-pkill sudo -f alkhaimah || true
+PID=$(pgrep -f ./alkhaimah)
+if [[ -n "$PID" ]]; then
+  echo "🛑 Stopping existing server..."
+  kill "$PID" > /dev/null 2>&1 || true
+  sleep 1
+fi
 
-# 6. Build the application
 echo "🔨 Building the application..."
 go build -o alkhaimah cmd/*.go
 
-# 7. Start the server in the background
 echo "🏃 Starting the application in the background..."
-nohup ./alkhaimah > alkhaimah.log 2>&1 &
+setsid ./alkhaimah > alkhaimah.log 2>&1 &
 
-# 8. Try applying the stash safely
-if git stash list | grep -q .; then
+# 🎯 Apply Stash (server only)
+if [[ -n "$IS_SERVER" ]] && git stash list | grep -q .; then
   echo "🎯 Trying to reapply stash..."
-
   if git stash pop --quiet; then
     echo "✅ Stash applied successfully!"
   else
@@ -45,5 +49,4 @@ else
   echo "🎯 No stash to apply."
 fi
 
-# 9. Done!
 echo "✅ Al-Khaimah is running. View logs with: tail -f alkhaimah.log"
