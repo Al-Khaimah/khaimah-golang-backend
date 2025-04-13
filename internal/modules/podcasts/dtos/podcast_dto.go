@@ -40,6 +40,7 @@ func MapToPodcastDTO(podcast podcastsModels.Podcast, userID uuid.UUID) PodcastDt
 		CoverImageURL:         podcast.CoverImageURL,
 		CoverImageDescription: podcast.CoverImageDescription,
 		LikesCount:            podcast.LikesCount,
+		Duration:              podcast.Duration,
 		CategoryID:            podcast.CategoryID.String(),
 		IsDownloaded:          isDownloaded,
 		IsBookmarked:          isBookmarked,
@@ -52,7 +53,9 @@ type GetAllPodcastsRequestDto struct {
 }
 
 type GetRecommendedPodcastsResponseDto struct {
-	Podcasts []PodcastDto `json:"podcasts"`
+	CategoryID   string       `json:"category_id"`
+	CategoryName string       `json:"category_name"`
+	Podcasts     []PodcastDto `json:"podcasts"`
 }
 
 type GetPodcastDetailsRequestDto struct {
