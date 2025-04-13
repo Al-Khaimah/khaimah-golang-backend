@@ -30,5 +30,5 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	userGroup.DELETE("/:id", newUserHandler.DeleteUser)
 	userGroup.GET("/bookmarks", newUserHandler.GetUserBookmarks)
 	userGroup.GET("/downloads", newUserHandler.GetDownloadedPodcasts)
-
+	userGroup.POST("/bookmarks/:podcast_id", newUserHandler.ToggleBookmarkPodcast)
 }

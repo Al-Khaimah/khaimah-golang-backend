@@ -17,8 +17,9 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	newCategoryService := categoryService.NewCategoryService(newCategoryRepository)
 	newCategoryHandler := categoryHandler.NewCategoryHandler(newCategoryService)
 
+	e.GET("/categories", newCategoryHandler.GetCategories)
+
 	categoryGroup := e.Group("/categories", middlewares.AuthMiddleware(newAuthRepository))
-	categoryGroup.GET("/", newCategoryHandler.GetCategories)
 	categoryGroup.POST("/", newCategoryHandler.CreateCategory)
 	categoryGroup.PUT("/:id", newCategoryHandler.UpdateCategory)
 	categoryGroup.DELETE("/:id", newCategoryHandler.DeleteCategory)

@@ -26,7 +26,7 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	podcastGroup.GET("/", podcastHandler.GetAllPodcasts)
 	podcastGroup.GET("/recommended", podcastHandler.GetRecommendedPodcasts)
 	podcastGroup.GET("/:id", podcastHandler.GetPodcastDetails)
-	podcastGroup.POST("/:id/like", podcastHandler.LikePodcast)
+	podcastGroup.POST("/:podcast_id/like", podcastHandler.LikePodcast)
 	podcastGroup.GET("/category/:category_id/", podcastHandler.GetPodcastsByCategory)
 	podcastGroup.POST("/:podcast_id/download", podcastHandler.DownloadPodcast)
 

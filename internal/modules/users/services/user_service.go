@@ -118,12 +118,13 @@ func (s *UserService) LoginUser(user *userDTO.LoginRequestDTO) base.Response {
 	}
 
 	loginResponse := userDTO.LoginResponseDTO{
-		ID:        existingUser.ID.String(),
-		FirstName: existingUser.FirstName,
-		LastName:  existingUser.LastName,
-		Email:     existingUser.Email,
-		Token:     token,
-		ExpiresAt: "never",
+		ID:         existingUser.ID.String(),
+		FirstName:  existingUser.FirstName,
+		LastName:   existingUser.LastName,
+		Email:      existingUser.Email,
+		Categories: existingUser.Categories,
+		Token:      token,
+		ExpiresAt:  "never",
 	}
 
 	return base.SetData(loginResponse, "Logged in successfully")
@@ -400,4 +401,35 @@ func (s *UserService) GetDownloadedPodcasts(userID string) base.Response {
 	}
 
 	return base.SetData(response)
+}
+
+func (s *UserService) ToggleBookmarkPodcast(userID, podcastID string) base.Response {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid User ID", err)
+	}
+
+	pid, err := uuid.Parse(podcastID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid Podcast ID", err)
+	}
+
+	exists, err := s.BookmarksRepo.IsBookmarked(uid, pid)
+	if err != nil {
+		return base.SetErrorMessage("Failed to check bookmark", err)
+	}
+
+	var action string
+	if exists {
+		err = s.BookmarksRepo.RemoveBookmark(uid, pid)
+		action = "removed"
+	} else {
+		err = s.BookmarksRepo.AddBookmark(uid, pid)
+		action = "added"
+	}
+	if err != nil {
+		return base.SetErrorMessage("Failed to toggle bookmark", err)
+	}
+
+	return base.SetSuccessMessage("Bookmark " + action + " successfully")
 }

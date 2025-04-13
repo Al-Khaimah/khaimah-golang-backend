@@ -118,3 +118,11 @@ func (h *UserHandler) GetDownloadedPodcasts(c echo.Context) error {
 	response := h.UserService.GetDownloadedPodcasts(userID)
 	return c.JSON(response.HTTPStatus, response)
 }
+
+func (h *UserHandler) ToggleBookmarkPodcast(c echo.Context) error {
+	userID := c.Get("user_id").(string)
+	podcastID := c.Param("podcast_id")
+
+	response := h.UserService.ToggleBookmarkPodcast(userID, podcastID)
+	return c.JSON(response.HTTPStatus, response)
+}

@@ -30,12 +30,13 @@ type LoginRequestDTO struct {
 }
 
 type LoginResponseDTO struct {
-	ID        string `json:"id"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	Token     string `json:"token"`
-	ExpiresAt string `json:"expires_at"`
+	ID         string                `json:"id"`
+	FirstName  string                `json:"first_name"`
+	LastName   string                `json:"last_name"`
+	Email      string                `json:"email"`
+	Categories []categories.Category `json:"categories"`
+	Token      string                `json:"token"`
+	ExpiresAt  string                `json:"expires_at"`
 }
 
 type UserProfileDTO struct {

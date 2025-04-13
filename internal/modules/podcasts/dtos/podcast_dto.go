@@ -16,6 +16,7 @@ type PodcastDto struct {
 	CoverImageURL         string `json:"cover_image_url"`
 	CoverImageDescription string `json:"cover_image_description"`
 	LikesCount            int    `json:"likes_count"`
+	Duration              int    `json:"duration"`
 	CategoryID            string `json:"category_id"`
 	IsDownloaded          bool   `json:"is_downloaded"`
 	IsBookmarked          bool   `json:"is_bookmarked"`
@@ -55,10 +56,6 @@ type GetRecommendedPodcastsResponseDto struct {
 }
 
 type GetPodcastDetailsRequestDto struct {
-	ID string `json:"id" param:"id" validate:"required,uuid" message:"ID must be a valid ID format"`
-}
-
-type LikePodcastRequestDto struct {
 	ID string `json:"id" param:"id" validate:"required,uuid" message:"ID must be a valid ID format"`
 }
 

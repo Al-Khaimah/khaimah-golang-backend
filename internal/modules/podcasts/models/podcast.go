@@ -13,6 +13,7 @@ type Podcast struct {
 	CoverImageURL         string    `gorm:"type:text" json:"cover_image_url"`
 	CoverImageDescription string    `gorm:"type:text" json:"cover_image_description"`
 	LikesCount            int       `gorm:"default:0" json:"likes_count"`
+	Duration              int       `gorm:"default:0" json:"duration"`
 	CategoryID            uuid.UUID `gorm:"type:uuid;index" json:"category_id"`
 }
 
@@ -23,4 +24,13 @@ type UserPodcast struct {
 	CategoryID     uuid.UUID `gorm:"type:uuid;index" json:"category_id"`
 	ResumePosition int       `gorm:"default:0" json:"resume_position"`
 	IsCompleted    bool      `gorm:"default:false" json:"is_completed"`
+}
+
+type BookmarkPodcast struct {
+	UserID    uuid.UUID `gorm:"primaryKey;type:uuid"`
+	PodcastID uuid.UUID `gorm:"primaryKey;type:uuid"`
+}
+
+func (BookmarkPodcast) TableName() string {
+	return "user_bookmarks" //by default it will be named 'user_bookmarks'
 }
