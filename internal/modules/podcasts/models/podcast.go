@@ -24,7 +24,6 @@ type UserPodcast struct {
 	CategoryID     uuid.UUID `gorm:"type:uuid;index" json:"category_id"`
 	ResumePosition int       `gorm:"default:0" json:"resume_position"`
 	IsCompleted    bool      `gorm:"default:false" json:"is_completed"`
-	IsDownloaded   bool      `gorm:"default:false" json:"is_downloaded"`
 }
 
 type BookmarkPodcast struct {

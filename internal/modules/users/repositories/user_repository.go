@@ -3,6 +3,7 @@ package users
 import (
 	"errors"
 	"fmt"
+	podcastModel "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/models"
 
 	"github.com/google/uuid"
 
@@ -100,4 +101,18 @@ func (r *UserRepository) FindUserCategories(userID uuid.UUID) ([]categoryModel.C
 	}
 
 	return user.Categories, nil
+}
+
+func (r *UserRepository) FindDownloadedPodcasts(userID uuid.UUID) ([]podcastModel.Podcast, error) {
+	var user models.User
+
+	result := r.DB.Where("id = ?", userID).Preload("Downloads").First(&user)
+	if result.Error == gorm.ErrRecordNotFound {
+		return []podcastModel.Podcast{}, nil
+	}
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return user.Downloads, nil
 }
