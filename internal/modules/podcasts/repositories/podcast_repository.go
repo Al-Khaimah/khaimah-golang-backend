@@ -2,7 +2,6 @@ package podcasts
 
 import (
 	"fmt"
-	podcastDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/dtos"
 	podcastsModels "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/models"
 	users "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/models"
 	"github.com/google/uuid"
@@ -31,26 +30,6 @@ func (r *PodcastRepository) GetAllPodcasts(offset int, limit int) ([]podcastsMod
 	}
 
 	return podcasts, int(totalCount), nil
-}
-
-func (r *PodcastRepository) MapToPodcastDTO(podcast podcastsModels.Podcast, userID uuid.UUID) podcastDTO.PodcastDto {
-	isDownloaded, _ := r.IsDownloaded(userID, podcast.ID)
-	isBookmarked, _ := r.IsBookmarked(userID, podcast.ID)
-	isCompleted, _ := r.IsCompleted(userID, podcast.ID)
-
-	return podcastDTO.PodcastDto{
-		ID:                    podcast.ID.String(),
-		Title:                 podcast.Title,
-		Description:           podcast.Description,
-		AudioURL:              podcast.AudioURL,
-		CoverImageURL:         podcast.CoverImageURL,
-		CoverImageDescription: podcast.CoverImageDescription,
-		LikesCount:            podcast.LikesCount,
-		CategoryID:            podcast.CategoryID.String(),
-		IsDownloaded:          isDownloaded,
-		IsBookmarked:          isBookmarked,
-		IsCompleted:           isCompleted,
-	}
 }
 
 func (r *PodcastRepository) GetListenedPodcastIDs(userUUID uuid.UUID) ([]uuid.UUID, error) {
