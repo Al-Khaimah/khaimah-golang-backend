@@ -414,3 +414,22 @@ func (s *UserService) ToggleBookmarkPodcast(userID, podcastID string) base.Respo
 
 	return base.SetSuccessMessage("Bookmark " + action + " successfully")
 }
+
+func (s *UserService) GetDownloadedPodcasts(userID string) base.Response {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid User ID", err)
+	}
+
+	downloads, err := s.UserRepo.FindDownloadedPodcasts(uid)
+	if err != nil {
+		return base.SetErrorMessage("Failed to fetch downloaded podcasts", err)
+	}
+
+	response := make([]interface{}, len(downloads))
+	for i, podcast := range downloads {
+		response[i] = podcastDTO.MapToPodcastDTO(podcast, uid)
+	}
+
+	return base.SetData(response)
+}

@@ -77,10 +77,10 @@ Handles podcast-related operations such as listing, liking, playing, downloading
 - **POST /user/bookmarks/{podcast_id}** ✅
   Toggle podcast remove and add bookmarks.
 
-- **POST /podcasts/{id}/download** ⏳  
+- **POST /podcasts/{id}/download** ✅  
   Allow users to download a podcast.
 
-- **GET /user/downloads** ⏳  
+- **GET /user/downloads** ✅  
   List all podcasts the user has downloaded.
 
 - **POST /podcasts/{id}/play** ⏳  

@@ -2,8 +2,8 @@ package podcasts
 
 import (
 	"fmt"
-
 	podcastsModels "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/models"
+	users "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -115,4 +115,55 @@ func (r *PodcastRepository) FindPodcastsByCategoryID(categoryID uuid.UUID, offse
 	}
 
 	return podcasts, int(totalCount), nil
+}
+
+func (r *PodcastRepository) MarkPodcastAsDownloaded(userID, podcastID uuid.UUID) error {
+	var user users.User
+	if err := r.DB.Preload("Downloads").First(&user, "id = ?", userID).Error; err != nil {
+		return err
+	}
+
+	podcast, err := r.FindPodcastByID(podcastID)
+	if err != nil {
+		return err
+	}
+
+	var existingPodcasts []podcastsModels.Podcast
+	err = r.DB.Model(&user).Association("Downloads").Find(&existingPodcasts, "id = ?", podcastID)
+	if err == nil && len(existingPodcasts) > 0 {
+		return nil
+	}
+
+	return r.DB.Model(&user).Association("Downloads").Append(podcast)
+}
+
+func (r *PodcastRepository) IsDownloaded(userID, podcastID uuid.UUID) (bool, error) {
+	var user users.User
+	err := r.DB.Preload("Downloads", "podcasts.id = ?", podcastID).First(&user, "id = ?", userID).Error
+	if err != nil {
+		return false, err
+	}
+	return len(user.Downloads) > 0, nil
+}
+
+func (r *PodcastRepository) IsBookmarked(userID, podcastID uuid.UUID) (bool, error) {
+	var user users.User
+	err := r.DB.Preload("Bookmarks", "podcasts.id = ?", podcastID).First(&user, "id = ?", userID).Error
+	if err != nil {
+		return false, err
+	}
+	return len(user.Bookmarks) > 0, nil
+}
+
+func (r *PodcastRepository) IsCompleted(userID, podcastID uuid.UUID) (bool, error) {
+	var userPodcast podcastsModels.UserPodcast
+	err := r.DB.Where("user_id = ? AND podcast_id = ? AND is_completed = ?", userID, podcastID, true).First(&userPodcast).Error
+
+	if err == gorm.ErrRecordNotFound {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
