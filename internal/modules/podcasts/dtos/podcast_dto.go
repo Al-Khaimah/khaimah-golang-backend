@@ -10,6 +10,7 @@ type PodcastDto struct {
 	CoverImageURL         string `json:"cover_image_url"`
 	CoverImageDescription string `json:"cover_image_description"`
 	LikesCount            int    `json:"likes_count"`
+	Duration              int    `json:"duration"`
 	CategoryID            string `json:"category_id"`
 	CreatedAt             string `json:"created_at,omitempty"`
 	UpdatedAt             string `json:"updated_at,omitempty"`
