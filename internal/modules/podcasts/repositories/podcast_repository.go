@@ -83,11 +83,12 @@ func (r *PodcastRepository) FindPodcastByID(podcastID uuid.UUID) (*podcastsModel
 	return &podcast, nil
 }
 
-func (r *PodcastRepository) IncrementLikesCount(podcastID uuid.UUID) (int, error) {
+func (r *PodcastRepository) IncrementLikesCount(podcastID uuid.UUID, addLikes int) (int, error) {
 	var podcast podcastsModels.Podcast
+
 	result := r.DB.Model(&podcastsModels.Podcast{}).
 		Where("id = ?", podcastID).
-		Update("likes_count", gorm.Expr("likes_count + 1")).
+		UpdateColumn("likes_count", gorm.Expr("likes_count + ?", addLikes)).
 		First(&podcast)
 
 	if result.Error == gorm.ErrRecordNotFound {
