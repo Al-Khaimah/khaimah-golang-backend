@@ -62,9 +62,13 @@ func (h *PodcastHandler) GetPodcastDetails(c echo.Context) error {
 }
 
 func (h *PodcastHandler) LikePodcast(c echo.Context) error {
-	podcastID := c.Param("podcast_id")
+	var reqDto podcastsDto.LikePodcastRequestDto
+	if res, ok := base.BindAndValidate(c, &reqDto); !ok {
+		return c.JSON(res.HTTPStatus, res)
+	}
 
-	response := h.PodcastService.LikePodcast(podcastID)
+	podcastID := c.Param("podcast_id")
+	response := h.PodcastService.LikePodcast(podcastID, reqDto.AddLikes)
 	return c.JSON(response.HTTPStatus, response)
 }
 
