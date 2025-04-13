@@ -5,7 +5,6 @@ import (
 	"github.com/Al-Khaimah/khaimah-golang-backend/config"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base/utils"
-	podcastRepository "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/repositories"
 	userDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/dtos"
 	models "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/models"
 	repos "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/repositories"
@@ -396,9 +395,8 @@ func (s *UserService) GetDownloadedPodcasts(userID string) base.Response {
 	}
 
 	response := make([]interface{}, len(downloads))
-	podcastRepo := podcastRepository.NewPodcastRepository(config.GetDB())
 	for i, podcast := range downloads {
-		response[i] = podcastRepo.MapToPodcastDTO(podcast, uid)
+		response[i] = podcastDTO.MapToPodcastDTO(podcast, uid)
 	}
 
 	return base.SetData(response)
