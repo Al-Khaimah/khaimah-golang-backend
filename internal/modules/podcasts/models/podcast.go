@@ -13,6 +13,7 @@ type Podcast struct {
 	CoverImageURL         string    `gorm:"type:text" json:"cover_image_url"`
 	CoverImageDescription string    `gorm:"type:text" json:"cover_image_description"`
 	LikesCount            int       `gorm:"default:0" json:"likes_count"`
+	Duration              int       `gorm:"default:0" json:"duration"`
 	CategoryID            uuid.UUID `gorm:"type:uuid;index" json:"category_id"`
 }
 
