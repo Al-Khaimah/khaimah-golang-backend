@@ -2,6 +2,8 @@ package migrations
 
 import (
 	"fmt"
+	notifications "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/notifications/models"
+	users "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/models"
 	"log"
 	"math/rand"
 	"os"
@@ -14,9 +16,30 @@ import (
 	podcasts "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/models"
 )
 
-func ClearDatabase(db *gorm.DB) {
-	fmt.Println("⚠️ Clearing existing database...")
-	db.Exec("DROP SCHEMA public CASCADE; CREATE SCHEMA public;")
+func ClearTables(db *gorm.DB) {
+	fmt.Println("⚠️ Clearing existing tables...")
+
+	models := []interface{}{
+		&users.User{},
+		&users.IamAuth{},
+		&categories.Category{},
+		&notifications.Notification{},
+		&podcasts.Podcast{},
+		&podcasts.UserPodcast{},
+		&podcasts.BookmarkPodcast{},
+	}
+
+	for _, model := range models {
+		if err := db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(model).Error; err != nil {
+			fmt.Printf("❌ Failed to clear table for model %T: %v\n", model, err)
+		}
+	}
+
+	db.Exec("DELETE FROM user_categories")
+	db.Exec("DELETE FROM user_bookmarks")
+	db.Exec("DELETE FROM user_downloads")
+
+	fmt.Println("✅ All table data cleared, schema is intact.")
 }
 
 func SeedDatabase(db *gorm.DB) {

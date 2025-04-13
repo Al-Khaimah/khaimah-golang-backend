@@ -1,7 +1,9 @@
 package podcasts
 
 import (
+	"github.com/Al-Khaimah/khaimah-golang-backend/config"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
+	categoryRepository "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/repositories"
 	podcastsDto "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/dtos"
 	podcasts "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/repositories"
 	"github.com/google/uuid"
@@ -48,38 +50,52 @@ func (s *PodcastService) GetRecommendedPodcasts(userID string, userCategoriesIDs
 		return base.SetErrorMessage("Invalid user ID format", err)
 	}
 
-	categoriesUUID := make([]uuid.UUID, len(userCategoriesIDs))
-	for i, categoryID := range userCategoriesIDs {
-		categoriesUUID[i], err = uuid.Parse(categoryID)
+	var categoriesUUID []uuid.UUID
+	for _, id := range userCategoriesIDs {
+		catID, err := uuid.Parse(id)
 		if err != nil {
 			return base.SetErrorMessage("Invalid category ID format", err)
 		}
+		categoriesUUID = append(categoriesUUID, catID)
 	}
 
-	listenedPodcastIDs, err := s.PodcastRepository.GetListenedPodcastIDs(userUUID)
+	completedIDs, err := s.PodcastRepository.GetCompletedPodcastsIDs(userUUID)
 	if err != nil {
-		return base.SetErrorMessage("Failed to get listened podcast IDs", err)
+		return base.SetErrorMessage("Failed to get completed podcast IDs", err)
 	}
 
-	recommendedPodcasts, err := s.PodcastRepository.GetRecommendedPodcasts(listenedPodcastIDs, categoriesUUID)
+	podcasts, err := s.PodcastRepository.GetRecommendedPodcasts(categoriesUUID, completedIDs)
 	if err != nil {
 		return base.SetErrorMessage("Failed to get recommended podcasts", err)
 	}
 
-	recommendedPodcastsResponseDto := make([]podcastsDto.PodcastDto, len(recommendedPodcasts))
-	for i, podcast := range recommendedPodcasts {
-		recommendedPodcastsResponseDto[i] = podcastsDto.PodcastDto{
-			ID:                    podcast.ID.String(),
-			Title:                 podcast.Title,
-			Description:           podcast.Description,
-			AudioURL:              podcast.AudioURL,
-			CoverImageURL:         podcast.CoverImageURL,
-			CoverImageDescription: podcast.CoverImageDescription,
-			LikesCount:            podcast.LikesCount,
-			CategoryID:            podcast.CategoryID.String(),
+	categoryRepo := categoryRepository.NewCategoryRepository(config.GetDB())
+	grouped := make(map[string]podcastsDto.GetRecommendedPodcastsResponseDto)
+
+	for _, podcast := range podcasts {
+		dto := podcastsDto.MapToPodcastDTO(podcast, userUUID)
+		categoryID := podcast.CategoryID.String()
+
+		if _, exists := grouped[categoryID]; !exists {
+			category, _ := categoryRepo.FindCategoryByID(podcast.CategoryID)
+			grouped[categoryID] = podcastsDto.GetRecommendedPodcastsResponseDto{
+				CategoryID:   categoryID,
+				CategoryName: category.Name,
+				Podcasts:     []podcastsDto.PodcastDto{},
+			}
 		}
+
+		group := grouped[categoryID]
+		group.Podcasts = append(group.Podcasts, dto)
+		grouped[categoryID] = group
 	}
-	return base.SetData(recommendedPodcastsResponseDto)
+
+	var response []podcastsDto.GetRecommendedPodcastsResponseDto
+	for _, group := range grouped {
+		response = append(response, group)
+	}
+
+	return base.SetData(response)
 }
 
 func (s *PodcastService) GetPodcastDetails(podcastID string) base.Response {

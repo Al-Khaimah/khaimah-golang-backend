@@ -32,11 +32,12 @@ func (r *PodcastRepository) GetAllPodcasts(offset int, limit int) ([]podcastsMod
 	return podcasts, int(totalCount), nil
 }
 
-func (r *PodcastRepository) GetListenedPodcastIDs(userUUID uuid.UUID) ([]uuid.UUID, error) {
-	var listenedPodcastIDs []uuid.UUID
+func (r *PodcastRepository) GetCompletedPodcastsIDs(userUUID uuid.UUID) ([]uuid.UUID, error) {
+	var completedPodcastsIDs []uuid.UUID
 	result := r.DB.Model(&podcastsModels.UserPodcast{}).
 		Where("user_id = ?", userUUID).
-		Pluck("podcast_id", &listenedPodcastIDs)
+		Where("is_completed = ?", true).
+		Pluck("podcast_id", &completedPodcastsIDs)
 
 	if result.Error == gorm.ErrRecordNotFound {
 		return nil, nil
@@ -44,17 +45,22 @@ func (r *PodcastRepository) GetListenedPodcastIDs(userUUID uuid.UUID) ([]uuid.UU
 	if result.Error != nil {
 		return nil, fmt.Errorf("failed to get listened podcast IDs: %w", result.Error)
 	}
-	return listenedPodcastIDs, nil
+	return completedPodcastsIDs, nil
 }
 
-func (r *PodcastRepository) GetRecommendedPodcasts(listenedPodcastIDs []uuid.UUID, categoriesUUID []uuid.UUID) ([]podcastsModels.Podcast, error) {
+func (r *PodcastRepository) GetRecommendedPodcasts(categoriesUUID []uuid.UUID, completedPodcastsIDs []uuid.UUID) ([]podcastsModels.Podcast, error) {
 	var podcasts []podcastsModels.Podcast
 
-	result := r.DB.Model(&podcastsModels.Podcast{}).
-		Where("category_id IN ?", categoriesUUID).
-		Where("id NOT IN ?", listenedPodcastIDs).
+	query := r.DB.Model(&podcastsModels.Podcast{}).
+		Where("category_id IN ?", categoriesUUID)
+
+	if len(completedPodcastsIDs) > 0 {
+		query = query.Where("id NOT IN ?", completedPodcastsIDs)
+	}
+
+	result := query.
 		Order("created_at DESC").
-		Limit(10).
+		Limit(6).
 		Find(&podcasts)
 
 	if result.Error != nil {
