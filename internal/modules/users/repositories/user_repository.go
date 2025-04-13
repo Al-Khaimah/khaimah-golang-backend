@@ -28,6 +28,7 @@ func (r *UserRepository) FindOneByEmail(email string) (*models.User, error) {
 	result := r.DB.
 		Preload("Categories").
 		Preload("Bookmarks").
+		Preload("Downloads").
 		Where("email ILIKE ?", email).
 		First(&user)
 
@@ -44,7 +45,11 @@ func (r *UserRepository) FindOneByEmail(email string) (*models.User, error) {
 func (r *UserRepository) FindOneByID(userID uuid.UUID) (*models.User, error) {
 	var user models.User
 
-	result := r.DB.Where("id = ?", userID).First(&user)
+	result := r.DB.
+		Preload("Categories").
+		Preload("Bookmarks").
+		Preload("Downloads").
+		Where("id = ?", userID).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
