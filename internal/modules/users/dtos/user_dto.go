@@ -40,10 +40,11 @@ type LoginResponseDTO struct {
 }
 
 type UserProfileDTO struct {
-	ID        string `json:"id"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
+	ID         string                `json:"id"`
+	FirstName  string                `json:"first_name"`
+	LastName   string                `json:"last_name"`
+	Email      string                `json:"email"`
+	Categories []categories.Category `json:"categories" validate:"required"`
 }
 
 type UpdateProfileDTO struct {

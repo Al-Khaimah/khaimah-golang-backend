@@ -181,10 +181,11 @@ func (s *UserService) GetUserProfile(userID string) base.Response {
 	}
 
 	profileResponse := userDTO.UserProfileDTO{
-		ID:        user.ID.String(),
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Email:     user.Email,
+		ID:         user.ID.String(),
+		FirstName:  user.FirstName,
+		LastName:   user.LastName,
+		Email:      user.Email,
+		Categories: user.Categories,
 	}
 
 	return base.SetData(profileResponse)
