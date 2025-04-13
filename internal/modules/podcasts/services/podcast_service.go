@@ -123,23 +123,25 @@ func (s *PodcastService) GetPodcastDetails(podcastID string) base.Response {
 	return base.SetData(podcastDetailsDto)
 }
 
-func (s *PodcastService) LikePodcast(podcastID string) base.Response {
+func (s *PodcastService) LikePodcast(podcastID string, addLikes int) base.Response {
 	podcastUUID, err := uuid.Parse(podcastID)
 	if err != nil {
 		return base.SetErrorMessage("Invalid podcast ID format", err)
 	}
 
-	likeCount, err := s.PodcastRepository.IncrementLikesCount(podcastUUID)
+	if addLikes <= 0 {
+		addLikes = 1
+	}
+
+	likeCount, err := s.PodcastRepository.IncrementLikesCount(podcastUUID, addLikes)
 	if err != nil || likeCount == 0 {
 		return base.SetErrorMessage("Failed to like podcast", err)
 	}
 
-	likePodcastResponseDto := podcastsDto.LikePodcastResponseDto{
+	return base.SetData(podcastsDto.LikePodcastResponseDto{
 		PodcastID:         podcastUUID.String(),
 		PodcastTotalLikes: likeCount,
-	}
-
-	return base.SetData(likePodcastResponseDto)
+	})
 }
 
 func (s *PodcastService) GetPodcastsByCategory(getPodcastsByCategoryRequestDto podcastsDto.GetPodcastsByCategoryRequestDto) base.Response {
