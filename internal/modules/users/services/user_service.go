@@ -369,17 +369,8 @@ func (s *UserService) GetUserBookmarks(userID string) base.Response {
 	}
 
 	bookmarksResponse := make([]interface{}, len(bookmarks))
-	for i, bookmark := range bookmarks {
-		bookmarksResponse[i] = podcastDTO.PodcastDto{
-			ID:                    bookmark.ID.String(),
-			Title:                 bookmark.Title,
-			Description:           bookmark.Description,
-			AudioURL:              bookmark.AudioURL,
-			CoverImageURL:         bookmark.CoverImageURL,
-			CoverImageDescription: bookmark.CoverImageDescription,
-			LikesCount:            bookmark.LikesCount,
-			CategoryID:            bookmark.CategoryID.String(),
-		}
+	for i, podcast := range bookmarks {
+		bookmarksResponse[i] = podcastDTO.MapToPodcastDTO(podcast, uid)
 	}
 
 	return base.SetData(bookmarksResponse)
