@@ -8,7 +8,7 @@ import (
 type Podcast struct {
 	base.Model
 	Title                 string    `gorm:"type:varchar(255);index" json:"title"`
-	Description           string    `gorm:"type:text" json:"description"`
+	Content               string    `gorm:"type:text" json:"content"`
 	AudioURL              string    `gorm:"type:text" json:"audio_url"`
 	CoverImageURL         string    `gorm:"type:text" json:"cover_image_url"`
 	CoverImageDescription string    `gorm:"type:text" json:"cover_image_description"`
