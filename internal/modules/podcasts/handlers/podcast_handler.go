@@ -23,6 +23,11 @@ func NewPodcastHandler(podcastService *podcasts.PodcastService, userService *use
 }
 
 func (h *PodcastHandler) GetAllPodcasts(c echo.Context) error {
+	userID, ok := c.Get("user_id").(string)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "Invalid or missing user ID"))
+	}
+
 	var getAllPodcastsRequestDto podcastsDto.GetAllPodcastsRequestDto
 	res, ok := base.BindAndValidate(c, &getAllPodcastsRequestDto)
 	if !ok {
@@ -31,7 +36,7 @@ func (h *PodcastHandler) GetAllPodcasts(c echo.Context) error {
 
 	getAllPodcastsRequestDto.BindPaginationParams(c)
 
-	response := h.PodcastService.GetAllPodcasts(getAllPodcastsRequestDto)
+	response := h.PodcastService.GetAllPodcasts(getAllPodcastsRequestDto, userID)
 	return c.JSON(response.HTTPStatus, response)
 }
 
@@ -51,13 +56,18 @@ func (h *PodcastHandler) GetRecommendedPodcasts(c echo.Context) error {
 }
 
 func (h *PodcastHandler) GetPodcastDetails(c echo.Context) error {
+	userID, ok := c.Get("user_id").(string)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "Invalid or missing user ID"))
+	}
+
 	var getPodcastDetailsRequestDto podcastsDto.GetPodcastDetailsRequestDto
 	res, ok := base.BindAndValidate(c, &getPodcastDetailsRequestDto)
 	if !ok {
 		return c.JSON(res.HTTPStatus, res)
 	}
 
-	response := h.PodcastService.GetPodcastDetails(getPodcastDetailsRequestDto.ID)
+	response := h.PodcastService.GetPodcastDetails(getPodcastDetailsRequestDto.ID, userID)
 	return c.JSON(response.HTTPStatus, response)
 }
 
@@ -73,6 +83,11 @@ func (h *PodcastHandler) LikePodcast(c echo.Context) error {
 }
 
 func (h *PodcastHandler) GetPodcastsByCategory(c echo.Context) error {
+	userID, ok := c.Get("user_id").(string)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "Invalid or missing user ID"))
+	}
+
 	var getPodcastsByCategoryRequestDto podcastsDto.GetPodcastsByCategoryRequestDto
 	res, ok := base.BindAndValidate(c, &getPodcastsByCategoryRequestDto)
 	if !ok {
@@ -81,7 +96,7 @@ func (h *PodcastHandler) GetPodcastsByCategory(c echo.Context) error {
 
 	getPodcastsByCategoryRequestDto.BindPaginationParams(c)
 
-	response := h.PodcastService.GetPodcastsByCategory(getPodcastsByCategoryRequestDto)
+	response := h.PodcastService.GetPodcastsByCategory(getPodcastsByCategoryRequestDto, userID)
 	return c.JSON(response.HTTPStatus, response)
 }
 
