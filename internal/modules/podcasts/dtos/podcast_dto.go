@@ -11,10 +11,10 @@ import (
 type PodcastDto struct {
 	ID                    string `json:"id"`
 	Title                 string `json:"title"`
-	Description           string `json:"description"`
+	Content               string `json:"content,omitempty"`
 	AudioURL              string `json:"audio_url"`
 	CoverImageURL         string `json:"cover_image_url"`
-	CoverImageDescription string `json:"cover_image_description"`
+	CoverImageDescription string `json:"cover_image_description,omitempty"`
 	LikesCount            int    `json:"likes_count"`
 	Duration              int    `json:"duration"`
 	CategoryID            string `json:"category_id"`
@@ -33,18 +33,16 @@ func MapToPodcastDTO(podcast podcastsModels.Podcast, userID uuid.UUID) PodcastDt
 	isCompleted, _ := r.IsCompleted(userID, podcast.ID)
 
 	return PodcastDto{
-		ID:                    podcast.ID.String(),
-		Title:                 podcast.Title,
-		Description:           podcast.Description,
-		AudioURL:              podcast.AudioURL,
-		CoverImageURL:         podcast.CoverImageURL,
-		CoverImageDescription: podcast.CoverImageDescription,
-		LikesCount:            podcast.LikesCount,
-		Duration:              podcast.Duration,
-		CategoryID:            podcast.CategoryID.String(),
-		IsDownloaded:          isDownloaded,
-		IsBookmarked:          isBookmarked,
-		IsCompleted:           isCompleted,
+		ID:            podcast.ID.String(),
+		Title:         podcast.Title,
+		AudioURL:      podcast.AudioURL,
+		CoverImageURL: podcast.CoverImageURL,
+		LikesCount:    podcast.LikesCount,
+		Duration:      podcast.Duration,
+		CategoryID:    podcast.CategoryID.String(),
+		IsDownloaded:  isDownloaded,
+		IsBookmarked:  isBookmarked,
+		IsCompleted:   isCompleted,
 	}
 }
 
