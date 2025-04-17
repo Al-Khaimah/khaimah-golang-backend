@@ -17,7 +17,12 @@ func NewPodcastService(podcastRepository *podcasts.PodcastRepository) *PodcastSe
 	return &PodcastService{PodcastRepository: podcastRepository}
 }
 
-func (s *PodcastService) GetAllPodcasts(getAllPodcastsRequestDto podcastsDto.GetAllPodcastsRequestDto) base.Response {
+func (s *PodcastService) GetAllPodcasts(getAllPodcastsRequestDto podcastsDto.GetAllPodcastsRequestDto, userID string) base.Response {
+	userUUID, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid user ID format", err)
+	}
+
 	page := getAllPodcastsRequestDto.Page
 	perPage := getAllPodcastsRequestDto.PerPage
 
@@ -30,17 +35,9 @@ func (s *PodcastService) GetAllPodcasts(getAllPodcastsRequestDto podcastsDto.Get
 	}
 	podcastDtos := make([]interface{}, len(podcasts))
 	for i, podcast := range podcasts {
-		podcastDtos[i] = podcastsDto.PodcastDto{
-			ID:                    podcast.ID.String(),
-			Title:                 podcast.Title,
-			Description:           podcast.Description,
-			AudioURL:              podcast.AudioURL,
-			CoverImageURL:         podcast.CoverImageURL,
-			CoverImageDescription: podcast.CoverImageDescription,
-			LikesCount:            podcast.LikesCount,
-			CategoryID:            podcast.CategoryID.String(),
-		}
+		podcastDtos[i] = podcastsDto.MapToPodcastDTO(podcast, userUUID)
 	}
+
 	return base.SetPaginatedResponse(podcastDtos, page, perPage, totalCount)
 }
 
@@ -98,7 +95,12 @@ func (s *PodcastService) GetRecommendedPodcasts(userID string, userCategoriesIDs
 	return base.SetData(response)
 }
 
-func (s *PodcastService) GetPodcastDetails(podcastID string) base.Response {
+func (s *PodcastService) GetPodcastDetails(podcastID string, userID string) base.Response {
+	userUUID, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid user ID format", err)
+	}
+
 	podcastUUID, err := uuid.Parse(podcastID)
 	if err != nil {
 		return base.SetErrorMessage("Invalid podcast ID format", err)
@@ -109,16 +111,7 @@ func (s *PodcastService) GetPodcastDetails(podcastID string) base.Response {
 		return base.SetErrorMessage("Failed to get podcast details", err)
 	}
 
-	podcastDetailsDto := podcastsDto.PodcastDto{
-		ID:                    podcast.ID.String(),
-		Title:                 podcast.Title,
-		Description:           podcast.Description,
-		AudioURL:              podcast.AudioURL,
-		CoverImageURL:         podcast.CoverImageURL,
-		CoverImageDescription: podcast.CoverImageDescription,
-		LikesCount:            podcast.LikesCount,
-		CategoryID:            podcast.CategoryID.String(),
-	}
+	podcastDetailsDto := podcastsDto.MapToPodcastDTO(podcast, userUUID)
 
 	return base.SetData(podcastDetailsDto)
 }
@@ -144,7 +137,12 @@ func (s *PodcastService) LikePodcast(podcastID string, addLikes int) base.Respon
 	})
 }
 
-func (s *PodcastService) GetPodcastsByCategory(getPodcastsByCategoryRequestDto podcastsDto.GetPodcastsByCategoryRequestDto) base.Response {
+func (s *PodcastService) GetPodcastsByCategory(getPodcastsByCategoryRequestDto podcastsDto.GetPodcastsByCategoryRequestDto, userID string) base.Response {
+	userUUID, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid user ID", err)
+	}
+
 	categoryUUID, err := uuid.Parse(getPodcastsByCategoryRequestDto.CategoryID)
 
 	page := getPodcastsByCategoryRequestDto.Page
@@ -164,16 +162,7 @@ func (s *PodcastService) GetPodcastsByCategory(getPodcastsByCategoryRequestDto p
 
 	podcastDtos := make([]interface{}, len(podcasts))
 	for i, podcast := range podcasts {
-		podcastDtos[i] = podcastsDto.PodcastDto{
-			ID:                    podcast.ID.String(),
-			Title:                 podcast.Title,
-			Description:           podcast.Description,
-			AudioURL:              podcast.AudioURL,
-			CoverImageURL:         podcast.CoverImageURL,
-			CoverImageDescription: podcast.CoverImageDescription,
-			LikesCount:            podcast.LikesCount,
-			CategoryID:            podcast.CategoryID.String(),
-		}
+		podcastDtos[i] = podcastsDto.MapToPodcastDTO(podcast, userUUID)
 	}
 
 	return base.SetPaginatedResponse(podcastDtos, page, perPage, totalCount)
