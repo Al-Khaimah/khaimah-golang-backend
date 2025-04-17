@@ -6,6 +6,7 @@ import (
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base/utils"
 	userDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/dtos"
+	users "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/enums"
 	models "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/models"
 	repos "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/repositories"
 	"github.com/golang-jwt/jwt/v5"
@@ -309,6 +310,28 @@ func (s *UserService) GetAllUsers(c echo.Context) base.Response {
 	return base.SetDataPaginated(c, userResponses)
 }
 
+func (s *UserService) MarkUserAdmin(userID string) base.Response {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid user ID", err)
+	}
+
+	user, err := s.UserRepo.FindOneByID(uid)
+	if err != nil {
+		return base.SetErrorMessage("Failed to fetch user", err)
+	}
+	if user == nil {
+		return base.SetErrorMessage("User not found", nil)
+	}
+
+	user.UserType = users.UserTypeAdmin
+	if err := s.UserRepo.UpdateUser(user); err != nil {
+		return base.SetErrorMessage("Failed to update user", err)
+	}
+
+	return base.SetSuccessMessage("User marked as admin successfully")
+}
+
 func (s *UserService) DeleteUser(userID string) base.Response {
 	uid, err := uuid.Parse(userID)
 	if err != nil {
@@ -321,6 +344,10 @@ func (s *UserService) DeleteUser(userID string) base.Response {
 	}
 	if user == nil {
 		return base.SetErrorMessage("User not found", "No user exists with this ID")
+	}
+
+	if user.UserType == users.UserTypeAdmin {
+		return base.SetErrorMessage("Admin User", "You cant delete an Admin User")
 	}
 
 	if user.DeletedAt.Valid {
@@ -369,17 +396,8 @@ func (s *UserService) GetUserBookmarks(userID string) base.Response {
 	}
 
 	bookmarksResponse := make([]interface{}, len(bookmarks))
-	for i, bookmark := range bookmarks {
-		bookmarksResponse[i] = podcastDTO.PodcastDto{
-			ID:                    bookmark.ID.String(),
-			Title:                 bookmark.Title,
-			Description:           bookmark.Description,
-			AudioURL:              bookmark.AudioURL,
-			CoverImageURL:         bookmark.CoverImageURL,
-			CoverImageDescription: bookmark.CoverImageDescription,
-			LikesCount:            bookmark.LikesCount,
-			CategoryID:            bookmark.CategoryID.String(),
-		}
+	for i, podcast := range bookmarks {
+		bookmarksResponse[i] = podcastDTO.MapToPodcastDTO(podcast, uid)
 	}
 
 	return base.SetData(bookmarksResponse)
