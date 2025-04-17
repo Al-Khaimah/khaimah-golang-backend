@@ -6,6 +6,7 @@ import (
 	users "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"time"
 )
 
 type PodcastRepository struct {
@@ -66,6 +67,23 @@ func (r *PodcastRepository) GetRecommendedPodcasts(categoriesUUID []uuid.UUID, c
 	if result.Error != nil {
 		return nil, fmt.Errorf("failed to get recommended podcasts: %w", result.Error)
 	}
+	return podcasts, nil
+}
+
+func (r *PodcastRepository) GetTrendingPodcasts() ([]podcastsModels.Podcast, error) {
+	var podcasts []podcastsModels.Podcast
+	tenDaysAgo := time.Now().AddDate(0, 0, -10)
+
+	result := r.DB.Model(&podcastsModels.Podcast{}).
+		Where("created_at >= ?", tenDaysAgo).
+		Order("likes_count DESC").
+		Limit(10).
+		Find(&podcasts)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
 	return podcasts, nil
 }
 
