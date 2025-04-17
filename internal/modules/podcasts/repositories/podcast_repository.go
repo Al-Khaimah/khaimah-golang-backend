@@ -192,3 +192,10 @@ func (r *PodcastRepository) IsCompleted(userID, podcastID uuid.UUID) (bool, erro
 	}
 	return true, nil
 }
+
+func (r *PodcastRepository) MarkPodcastAsCompleted(userID, podcastID uuid.UUID) error {
+	return r.DB.
+		Model(&podcastsModels.UserPodcast{}).
+		Where("user_id = ? AND podcast_id = ?", userID, podcastID).
+		Update("is_completed", true).Error
+}
