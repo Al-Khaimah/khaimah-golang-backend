@@ -69,18 +69,18 @@ func (r *PodcastRepository) GetRecommendedPodcasts(categoriesUUID []uuid.UUID, c
 	return podcasts, nil
 }
 
-func (r *PodcastRepository) FindPodcastByID(podcastID uuid.UUID) (*podcastsModels.Podcast, error) {
+func (r *PodcastRepository) FindPodcastByID(podcastID uuid.UUID) (podcastsModels.Podcast, error) {
 	var podcast podcastsModels.Podcast
 	result := r.DB.Where("id = ?", podcastID).First(&podcast)
 
 	if result.Error == gorm.ErrRecordNotFound {
-		return nil, nil
+		return podcastsModels.Podcast{}, nil
 	}
 	if result.Error != nil {
-		return nil, fmt.Errorf("failed to find podcast: %w", result.Error)
+		return podcastsModels.Podcast{}, fmt.Errorf("failed to find podcast: %w", result.Error)
 	}
 
-	return &podcast, nil
+	return podcast, nil
 }
 
 func (r *PodcastRepository) IncrementLikesCount(podcastID uuid.UUID, addLikes int) (int, error) {
