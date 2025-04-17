@@ -81,7 +81,6 @@ func seedPodcasts(db *gorm.DB) {
 
 		podcast := podcasts.Podcast{
 			Title:                 faker.Word() + " Podcast",
-			Description:           faker.Paragraph(),
 			AudioURL:              fullAudioURL,
 			CoverImageURL:         fmt.Sprintf("https://source.unsplash.com/random/400x400?sig=%d", i),
 			CoverImageDescription: faker.Sentence(),
