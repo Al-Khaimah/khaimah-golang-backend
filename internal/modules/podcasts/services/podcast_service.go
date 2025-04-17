@@ -209,3 +209,22 @@ func (s *PodcastService) DownloadPodcast(userID, podcastID string) base.Response
 
 	return base.SetSuccessMessage("Podcast marked as downloaded")
 }
+
+func (s *PodcastService) MarkAsCompleted(userID string, podcastID string) base.Response {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid user ID format", err)
+	}
+
+	pid, err := uuid.Parse(podcastID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid podcast ID format", err)
+	}
+
+	err = s.PodcastRepository.MarkPodcastAsCompleted(uid, pid)
+	if err != nil {
+		return base.SetErrorMessage("Failed to mark podcast as completed", err)
+	}
+
+	return base.SetSuccessMessage("Podcast marked as completed")
+}
