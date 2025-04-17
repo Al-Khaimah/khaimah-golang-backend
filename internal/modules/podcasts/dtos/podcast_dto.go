@@ -27,10 +27,14 @@ type PodcastDto struct {
 }
 
 func MapToPodcastDTO(podcast podcastsModels.Podcast, userID uuid.UUID) PodcastDto {
-	r := podcastRepository.NewPodcastRepository(config.GetDB())
-	isDownloaded, _ := r.IsDownloaded(userID, podcast.ID)
-	isBookmarked, _ := r.IsBookmarked(userID, podcast.ID)
-	isCompleted, _ := r.IsCompleted(userID, podcast.ID)
+	var isDownloaded, isBookmarked, isCompleted bool
+
+	if userID != uuid.Nil {
+		r := podcastRepository.NewPodcastRepository(config.GetDB())
+		isDownloaded, _ = r.IsDownloaded(userID, podcast.ID)
+		isBookmarked, _ = r.IsBookmarked(userID, podcast.ID)
+		isCompleted, _ = r.IsCompleted(userID, podcast.ID)
+	}
 
 	return PodcastDto{
 		ID:            podcast.ID.String(),
