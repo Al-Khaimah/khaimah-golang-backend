@@ -95,6 +95,29 @@ func (s *PodcastService) GetRecommendedPodcasts(userID string, userCategoriesIDs
 	return base.SetData(response)
 }
 
+func (s *PodcastService) GetTrendingPodcasts(userID string) base.Response {
+	userUUID := uuid.Nil
+	if userID != "" {
+		parsedID, err := uuid.Parse(userID)
+		if err != nil {
+			return base.SetErrorMessage("Invalid user ID format", err)
+		}
+		userUUID = parsedID
+	}
+
+	podcasts, err := s.PodcastRepository.GetTrendingPodcasts()
+	if err != nil {
+		return base.SetErrorMessage("Failed to fetch trending podcasts", err)
+	}
+
+	response := make([]interface{}, len(podcasts))
+	for i, podcast := range podcasts {
+		response[i] = podcastsDto.MapToPodcastDTO(podcast, userUUID)
+	}
+
+	return base.SetData(response)
+}
+
 func (s *PodcastService) GetPodcastDetails(podcastID string, userID string) base.Response {
 	userUUID, err := uuid.Parse(userID)
 	if err != nil {
