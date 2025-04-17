@@ -30,4 +30,6 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	podcastGroup.GET("/category/:category_id/", podcastHandler.GetPodcastsByCategory)
 	podcastGroup.POST("/:podcast_id/download", podcastHandler.DownloadPodcast)
 
+	/*adminGroup := e.Group("/admin", middlewares.AdminMiddleware())
+	adminGroup.DELETE()*/ //TODO: delete podcast by podcast_id for admin
 }
