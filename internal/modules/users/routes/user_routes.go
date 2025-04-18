@@ -26,10 +26,13 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	userGroup.PUT("/profile", newUserHandler.UpdateUserProfile)
 	userGroup.PATCH("/profile/preferences", newUserHandler.UpdateUserPreferences)
 	userGroup.PATCH("/profile/password", newUserHandler.ChangePassword)
-	userGroup.GET("/all-users", newUserHandler.GetAllUsers)
-	userGroup.DELETE("/:id", newUserHandler.DeleteUser)
 	userGroup.GET("/bookmarks", newUserHandler.GetUserBookmarks)
 	userGroup.POST("/bookmarks/:podcast_id", newUserHandler.ToggleBookmarkPodcast)
 	userGroup.GET("/downloads", newUserHandler.GetDownloadedPodcasts)
+
+	adminGroup := e.Group("/admin")
+	adminGroup.POST("/mark-user-admin/:user_id", newUserHandler.MarkUserAsAdmin)
+	adminGroup.GET("/all-users", newUserHandler.GetAllUsers)
+	adminGroup.DELETE("/user/:id", newUserHandler.DeleteUser)
 
 }

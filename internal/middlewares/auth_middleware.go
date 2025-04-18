@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base/utils"
+	users "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/enums"
 	"net/http"
 	"strings"
 
@@ -38,6 +39,12 @@ func AuthMiddleware(authRepo *repos.AuthRepository) echo.MiddlewareFunc {
 				return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "User is logged out"))
 			}
 
+			userRepo := repos.NewUserRepository(config.GetDB())
+			user, _ := userRepo.FindOneByID(userID)
+
+			isAdmin := user.UserType == users.UserTypeAdmin
+
+			c.Set("is_admin", isAdmin)
 			c.Set("user_id", userID.String())
 			return next(c)
 		}

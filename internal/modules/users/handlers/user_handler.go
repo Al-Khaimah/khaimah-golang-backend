@@ -98,6 +98,13 @@ func (h *UserHandler) GetAllUsers(c echo.Context) error {
 	return c.JSON(response.HTTPStatus, response)
 }
 
+func (h *UserHandler) MarkUserAsAdmin(c echo.Context) error {
+	userID := c.Param("user_id")
+
+	response := h.UserService.MarkUserAdmin(userID)
+	return c.JSON(response.HTTPStatus, response)
+}
+
 func (h *UserHandler) DeleteUser(c echo.Context) error {
 	userID := c.Param("id")
 

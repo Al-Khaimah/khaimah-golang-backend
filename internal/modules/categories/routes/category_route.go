@@ -8,19 +8,18 @@ import (
 	categoryHandler "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/handlers"
 	categoryRepository "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/repositories"
 	categoryService "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/services"
-	authRepository "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/repositories"
 )
 
 func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	newCategoryRepository := categoryRepository.NewCategoryRepository(db)
-	newAuthRepository := authRepository.NewAuthRepository(db)
 	newCategoryService := categoryService.NewCategoryService(newCategoryRepository)
 	newCategoryHandler := categoryHandler.NewCategoryHandler(newCategoryService)
 
 	e.GET("/categories", newCategoryHandler.GetCategories)
 
-	categoryGroup := e.Group("/categories", middlewares.AuthMiddleware(newAuthRepository))
-	categoryGroup.POST("/", newCategoryHandler.CreateCategory)
-	categoryGroup.PUT("/:id", newCategoryHandler.UpdateCategory)
-	categoryGroup.DELETE("/:id", newCategoryHandler.DeleteCategory)
+	adminCategoryGroup := e.Group("/admin/categories", middlewares.AdminMiddleware())
+	adminCategoryGroup.POST("/", newCategoryHandler.CreateCategory)
+	adminCategoryGroup.PUT("/:id", newCategoryHandler.UpdateCategory)
+	adminCategoryGroup.DELETE("/:id", newCategoryHandler.DeleteCategory)
+
 }
