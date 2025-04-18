@@ -2,6 +2,7 @@ package users
 
 import (
 	"fmt"
+
 	"github.com/Al-Khaimah/khaimah-golang-backend/config"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base/utils"
@@ -243,9 +244,8 @@ func (s *UserService) UpdateUserPreferences(userID string, updateData userDTO.Up
 	}
 
 	newCategories := utils.ConvertIDsToCategories(updateData.Categories)
-	user.Categories = newCategories
 
-	err = s.UserRepo.UpdateUser(user)
+	err = s.UserRepo.UpdateUserPreferences(user, newCategories)
 	if err != nil {
 		return base.SetErrorMessage("Failed to update preferences", err)
 	}
