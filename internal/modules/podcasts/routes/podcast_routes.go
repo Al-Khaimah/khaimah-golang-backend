@@ -22,6 +22,7 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	podcastService := podcastService.NewPodcastService(podcastRepo)
 	podcastHandler := podcastHandler.NewPodcastHandler(podcastService, userService)
 
+	e.GET("/podcasts/trending", podcastHandler.GetTrendingPodcasts)
 	podcastGroup := e.Group("/podcasts", middlewares.AuthMiddleware(authRepo))
 	podcastGroup.GET("/", podcastHandler.GetAllPodcasts)
 	podcastGroup.GET("/recommended", podcastHandler.GetRecommendedPodcasts)

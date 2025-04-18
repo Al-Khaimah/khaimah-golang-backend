@@ -55,6 +55,13 @@ func (h *PodcastHandler) GetRecommendedPodcasts(c echo.Context) error {
 	return c.JSON(response.HTTPStatus, response)
 }
 
+func (h *PodcastHandler) GetTrendingPodcasts(c echo.Context) error {
+	userID, _ := c.Get("user_id").(string)
+
+	response := h.PodcastService.GetTrendingPodcasts(userID)
+	return c.JSON(response.HTTPStatus, response)
+}
+
 func (h *PodcastHandler) GetPodcastDetails(c echo.Context) error {
 	userID, ok := c.Get("user_id").(string)
 	if !ok {
