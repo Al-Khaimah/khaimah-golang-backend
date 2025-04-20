@@ -30,7 +30,7 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	userGroup.POST("/bookmarks/:podcast_id", newUserHandler.ToggleBookmarkPodcast)
 	userGroup.GET("/downloads", newUserHandler.GetDownloadedPodcasts)
 
-	adminGroup := e.Group("/admin")
+	adminGroup := e.Group("/admin", middlewares.AdminMiddleware())
 	adminGroup.POST("/mark-user-admin/:user_id", newUserHandler.MarkUserAsAdmin)
 	adminGroup.GET("/all-users", newUserHandler.GetAllUsers)
 	adminGroup.DELETE("/user/:id", newUserHandler.DeleteUser)
