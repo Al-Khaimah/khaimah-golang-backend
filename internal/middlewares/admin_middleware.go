@@ -13,7 +13,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func AuthMiddleware(authRepo *repos.AuthRepository) echo.MiddlewareFunc {
+func AdminMiddleware() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			authHeader := c.Request().Header.Get("Authorization")
@@ -32,18 +32,16 @@ func AuthMiddleware(authRepo *repos.AuthRepository) echo.MiddlewareFunc {
 				return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "Invalid token"))
 			}
 
-			authRecord, err := authRepo.FindAuthByUserID(userID)
+			userRepo := repos.NewUserRepository(config.GetDB())
+			user, err := userRepo.FindOneByID(userID)
 			if err != nil {
 				return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "User authentication not found"))
 			}
-			if !authRecord.IsActive {
-				return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "User is logged out"))
-			}
-
-			userRepo := repos.NewUserRepository(config.GetDB())
-			user, _ := userRepo.FindOneByID(userID)
 
 			isAdmin := user.UserType == users.UserTypeAdmin
+			if !isAdmin {
+				return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "Require admin action"))
+			}
 
 			c.Set("is_admin", isAdmin)
 			c.Set("user_id", userID.String())

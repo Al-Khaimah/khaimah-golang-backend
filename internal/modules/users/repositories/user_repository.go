@@ -3,6 +3,7 @@ package users
 import (
 	"errors"
 	"fmt"
+
 	podcastModel "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/models"
 
 	"github.com/google/uuid"
@@ -120,4 +121,12 @@ func (r *UserRepository) FindDownloadedPodcasts(userID uuid.UUID) ([]podcastMode
 	}
 
 	return user.Downloads, nil
+}
+
+func (r *UserRepository) UpdateUserPreferences(user *models.User, categories []categoryModel.Category) error {
+	err := r.DB.Model(user).Association("Categories").Replace(categories)
+	if err != nil {
+		return fmt.Errorf("failed to update user preferences: %w", err)
+	}
+	return nil
 }

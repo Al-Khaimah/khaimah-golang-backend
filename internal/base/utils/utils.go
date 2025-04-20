@@ -3,11 +3,12 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/Al-Khaimah/khaimah-golang-backend/config"
 	models "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/models"
 	categories "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/repositories"
-	"os"
-	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
