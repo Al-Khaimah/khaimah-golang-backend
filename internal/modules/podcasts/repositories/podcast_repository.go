@@ -2,11 +2,12 @@ package podcasts
 
 import (
 	"fmt"
+	"time"
+
 	podcastsModels "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/models"
 	users "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"time"
 )
 
 type PodcastRepository struct {
@@ -52,21 +53,22 @@ func (r *PodcastRepository) GetCompletedPodcastsIDs(userUUID uuid.UUID) ([]uuid.
 func (r *PodcastRepository) GetRecommendedPodcasts(categoriesUUID []uuid.UUID, completedPodcastsIDs []uuid.UUID) ([]podcastsModels.Podcast, error) {
 	var podcasts []podcastsModels.Podcast
 
-	query := r.DB.Model(&podcastsModels.Podcast{}).
+	subQuery := r.DB.Model(&podcastsModels.Podcast{}).
+		Select("*, ROW_NUMBER() OVER (PARTITION BY category_id ORDER BY created_at DESC) as rn").
 		Where("category_id IN ?", categoriesUUID)
 
 	if len(completedPodcastsIDs) > 0 {
-		query = query.Where("id NOT IN ?", completedPodcastsIDs)
+		subQuery = subQuery.Where("id NOT IN ?", completedPodcastsIDs)
 	}
 
-	result := query.
-		Order("created_at DESC").
-		Limit(6).
+	result := r.DB.Table("(?) as p", subQuery).
+		Where("p.rn <= ?", 6).
 		Find(&podcasts)
 
 	if result.Error != nil {
 		return nil, fmt.Errorf("failed to get recommended podcasts: %w", result.Error)
 	}
+
 	return podcasts, nil
 }
 
