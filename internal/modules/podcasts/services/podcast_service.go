@@ -191,21 +191,33 @@ func (s *PodcastService) GetPodcastsByCategory(getPodcastsByCategoryRequestDto p
 	return base.SetPaginatedResponse(podcastDtos, page, perPage, totalCount)
 }
 
-func (s *PodcastService) DownloadPodcast(userID, podcastID string) base.Response {
+func (s *PodcastService) ToggleDownloadPodcast(userID, podcastID string) base.Response {
 	uid, err := uuid.Parse(userID)
 	if err != nil {
-		return base.SetErrorMessage("Invalid user ID", err)
+		return base.SetErrorMessage("Invalid User ID", err)
 	}
 
 	pid, err := uuid.Parse(podcastID)
 	if err != nil {
-		return base.SetErrorMessage("Invalid podcast ID", err)
+		return base.SetErrorMessage("Invalid Podcast ID", err)
 	}
 
-	err = s.PodcastRepository.MarkPodcastAsDownloaded(uid, pid)
+	exists, err := s.PodcastRepository.IsDownloaded(uid, pid)
 	if err != nil {
-		return base.SetErrorMessage("Failed to mark podcast as downloaded", err)
+		return base.SetErrorMessage("Failed to check download status", err)
 	}
 
-	return base.SetSuccessMessage("Podcast marked as downloaded")
+	var action string
+	if exists {
+		err = s.PodcastRepository.RemoveDownload(uid, pid)
+		action = "removed"
+	} else {
+		err = s.PodcastRepository.AddDownload(uid, pid)
+		action = "added"
+	}
+	if err != nil {
+		return base.SetErrorMessage("Failed to toggle download", err)
+	}
+
+	return base.SetSuccessMessage("Download " + action + " successfully")
 }
