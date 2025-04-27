@@ -143,7 +143,6 @@ func (r *PodcastRepository) FindPodcastsByCategoryID(categoryID uuid.UUID, offse
 
 	return podcasts, int(totalCount), nil
 }
-
 func (r *PodcastRepository) AddDownload(userID, podcastID uuid.UUID) error {
 	var user users.User
 	if err := r.DB.Preload("Downloads").First(&user, "id = ?", userID).Error; err != nil {
@@ -155,7 +154,7 @@ func (r *PodcastRepository) AddDownload(userID, podcastID uuid.UUID) error {
 		return err
 	}
 
-	return r.DB.Model(&user).Association("Downloads").Append(podcast)
+	return r.DB.Model(&user).Association("Downloads").Append([]*podcastsModels.Podcast{&podcast})
 }
 
 func (r *PodcastRepository) RemoveDownload(userID, podcastID uuid.UUID) error {
@@ -168,11 +167,11 @@ func (r *PodcastRepository) RemoveDownload(userID, podcastID uuid.UUID) error {
 	if err != nil {
 		return err
 	}
-	if podcast == (podcastsModels.Podcast{}) {
+	if podcast.ID == uuid.Nil {
 		return fmt.Errorf("podcast not found")
 	}
 
-	return r.DB.Model(&user).Association("Downloads").Delete(podcast)
+	return r.DB.Model(&user).Association("Downloads").Delete([]*podcastsModels.Podcast{&podcast})
 }
 
 func (r *PodcastRepository) IsDownloaded(userID, podcastID uuid.UUID) (bool, error) {
