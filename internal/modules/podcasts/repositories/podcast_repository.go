@@ -168,6 +168,9 @@ func (r *PodcastRepository) RemoveDownload(userID, podcastID uuid.UUID) error {
 	if err != nil {
 		return err
 	}
+	if podcast == (podcastsModels.Podcast{}) {
+		return fmt.Errorf("podcast not found")
+	}
 
 	return r.DB.Model(&user).Association("Downloads").Delete(podcast)
 }
