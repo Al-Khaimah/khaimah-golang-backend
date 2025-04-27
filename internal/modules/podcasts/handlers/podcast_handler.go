@@ -111,6 +111,6 @@ func (h *PodcastHandler) DownloadPodcast(c echo.Context) error {
 	podcastID := c.Param("podcast_id")
 	userID := c.Get("user_id").(string)
 
-	response := h.PodcastService.DownloadPodcast(userID, podcastID)
+	response := h.PodcastService.ToggleDownloadPodcast(userID, podcastID)
 	return c.JSON(response.HTTPStatus, response)
 }
