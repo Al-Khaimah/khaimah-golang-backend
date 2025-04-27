@@ -144,7 +144,7 @@ func (r *PodcastRepository) FindPodcastsByCategoryID(categoryID uuid.UUID, offse
 	return podcasts, int(totalCount), nil
 }
 
-func (r *PodcastRepository) MarkPodcastAsDownloaded(userID, podcastID uuid.UUID) error {
+func (r *PodcastRepository) AddDownload(userID, podcastID uuid.UUID) error {
 	var user users.User
 	if err := r.DB.Preload("Downloads").First(&user, "id = ?", userID).Error; err != nil {
 		return err
@@ -155,13 +155,21 @@ func (r *PodcastRepository) MarkPodcastAsDownloaded(userID, podcastID uuid.UUID)
 		return err
 	}
 
-	var existingPodcasts []podcastsModels.Podcast
-	err = r.DB.Model(&user).Association("Downloads").Find(&existingPodcasts, "id = ?", podcastID)
-	if err == nil && len(existingPodcasts) > 0 {
-		return nil
+	return r.DB.Model(&user).Association("Downloads").Append(podcast)
+}
+
+func (r *PodcastRepository) RemoveDownload(userID, podcastID uuid.UUID) error {
+	var user users.User
+	if err := r.DB.Preload("Downloads").First(&user, "id = ?", userID).Error; err != nil {
+		return err
 	}
 
-	return r.DB.Model(&user).Association("Downloads").Append(podcast)
+	podcast, err := r.FindPodcastByID(podcastID)
+	if err != nil {
+		return err
+	}
+
+	return r.DB.Model(&user).Association("Downloads").Delete(podcast)
 }
 
 func (r *PodcastRepository) IsDownloaded(userID, podcastID uuid.UUID) (bool, error) {
@@ -193,4 +201,19 @@ func (r *PodcastRepository) IsCompleted(userID, podcastID uuid.UUID) (bool, erro
 		return false, err
 	}
 	return true, nil
+}
+
+func (r *PodcastRepository) IsTrending(podcastID uuid.UUID) (bool, error) {
+	var podcast podcastsModels.Podcast
+	err := r.DB.Where("id = ?", podcastID).First(&podcast).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+	tenDaysAgo := time.Now().AddDate(0, 0, -10)
+	isTrending := podcast.LikesCount >= 10 && podcast.CreatedAt.After(tenDaysAgo)
+
+	return isTrending, nil
 }
