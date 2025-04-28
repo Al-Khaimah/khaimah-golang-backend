@@ -84,3 +84,17 @@ type GetPodcastsByCategoryRequestDto struct {
 type GetPodcastsByCategoryResponseDto struct {
 	Podcasts []PodcastDto `json:"podcasts"`
 }
+
+type TrackUserPodcastRequestDto struct {
+	ResumePosition int  `json:"resume_position"`
+	IsCompleted    bool `json:"is_completed"`
+}
+
+type TrackUserPodcastResponseDto struct {
+	ResumePosition int  `json:"resume_position"`
+	IsCompleted    bool `json:"is_completed"`
+}
+
+type GetUserWatchHistoryRequestDto struct {
+	base.PaginationRequest
+}

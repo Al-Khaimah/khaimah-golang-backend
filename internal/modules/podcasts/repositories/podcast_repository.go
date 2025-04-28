@@ -89,18 +89,18 @@ func (r *PodcastRepository) GetTrendingPodcasts() ([]podcastsModels.Podcast, err
 	return podcasts, nil
 }
 
-func (r *PodcastRepository) FindPodcastByID(podcastID uuid.UUID) (podcastsModels.Podcast, error) {
+func (r *PodcastRepository) FindPodcastByID(podcastID uuid.UUID) (*podcastsModels.Podcast, error) {
 	var podcast podcastsModels.Podcast
-	result := r.DB.Where("id = ?", podcastID).First(&podcast)
+	result := r.DB.Model(podcastsModels.Podcast{}).Where("id = ?", podcastID).First(&podcast)
 
 	if result.Error == gorm.ErrRecordNotFound {
-		return podcastsModels.Podcast{}, nil
+		return nil, nil
 	}
 	if result.Error != nil {
-		return podcastsModels.Podcast{}, fmt.Errorf("failed to find podcast: %w", result.Error)
+		return nil, fmt.Errorf("failed to find podcast: %w", result.Error)
 	}
 
-	return podcast, nil
+	return &podcast, nil
 }
 
 func (r *PodcastRepository) IncrementLikesCount(podcastID uuid.UUID, addLikes int) (int, error) {
@@ -154,7 +154,7 @@ func (r *PodcastRepository) AddDownload(userID, podcastID uuid.UUID) error {
 		return err
 	}
 
-	return r.DB.Model(&user).Association("Downloads").Append([]*podcastsModels.Podcast{&podcast})
+	return r.DB.Model(&user).Association("Downloads").Append([]*podcastsModels.Podcast{podcast})
 }
 
 func (r *PodcastRepository) RemoveDownload(userID, podcastID uuid.UUID) error {
@@ -171,7 +171,7 @@ func (r *PodcastRepository) RemoveDownload(userID, podcastID uuid.UUID) error {
 		return fmt.Errorf("podcast not found")
 	}
 
-	return r.DB.Model(&user).Association("Downloads").Delete([]*podcastsModels.Podcast{&podcast})
+	return r.DB.Model(&user).Association("Downloads").Delete([]*podcastsModels.Podcast{podcast})
 }
 
 func (r *PodcastRepository) IsDownloaded(userID, podcastID uuid.UUID) (bool, error) {
@@ -193,16 +193,66 @@ func (r *PodcastRepository) IsBookmarked(userID, podcastID uuid.UUID) (bool, err
 }
 
 func (r *PodcastRepository) IsCompleted(userID, podcastID uuid.UUID) (bool, error) {
-	var userPodcast podcastsModels.UserPodcast
-	err := r.DB.Where("user_id = ? AND podcast_id = ? AND is_completed = ?", userID, podcastID, true).First(&userPodcast).Error
+	var count int64
+	err := r.DB.Model(&podcastsModels.UserPodcast{}).
+		Where("user_id = ? AND podcast_id = ? AND is_completed = ?", userID, podcastID, true).
+		Count(&count).Error
 
-	if err == gorm.ErrRecordNotFound {
-		return false, nil
-	}
 	if err != nil {
 		return false, err
 	}
-	return true, nil
+
+	return count > 0, nil
+}
+
+func (r *PodcastRepository) TrackUserPodcast(userID, podcastID uuid.UUID, resumePosition int, isCompleted bool) (*podcastsModels.UserPodcast, error) {
+	var userPodcast podcastsModels.UserPodcast
+	result := r.DB.Where("user_id = ? AND podcast_id = ?", userID, podcastID).First(&userPodcast)
+
+	if result.Error == gorm.ErrRecordNotFound {
+		return nil, nil
+	}
+	if result.Error != nil {
+		return nil, fmt.Errorf("failed to find podcast for user ID %s, error %w", userID, result.Error)
+	}
+
+	userPodcast.ResumePosition = resumePosition
+	userPodcast.IsCompleted = isCompleted
+
+	if err := r.DB.Save(&userPodcast).Error; err != nil {
+		return nil, fmt.Errorf("failed to update user podcast tracking: %w", err)
+	}
+
+	return &userPodcast, nil
+}
+
+func (r *PodcastRepository) GetUserCompletedPodcasts(userUUID uuid.UUID, offset, limit int) (*[]podcastsModels.Podcast, int, error) {
+	var podcasts []podcastsModels.Podcast
+	var totalCount int64
+
+	joinQuery := r.DB.Model(&podcastsModels.Podcast{}).
+		Joins("INNER JOIN user_podcasts ON podcasts.id = user_podcasts.podcast_id").
+		Where("user_podcasts.user_id = ?", userUUID).
+		Where("user_podcasts.is_completed = ?", true)
+
+	if err := joinQuery.Count(&totalCount).Error; err != nil {
+		return nil, 0, fmt.Errorf("failed to count completed podcasts: %w", err)
+	}
+
+	if err := joinQuery.Offset(offset).Limit(limit).Find(&podcasts).Error; err != nil {
+		return nil, 0, fmt.Errorf("failed to get completed podcasts: %w", err)
+	}
+
+	return &podcasts, int(totalCount), nil
+}
+
+func (r *PodcastRepository) CreateUserPodcast(userPodcast *podcastsModels.UserPodcast) (*podcastsModels.UserPodcast, error) {
+	result := r.DB.Model(podcastsModels.UserPodcast{}).Create(userPodcast)
+	if result.Error != nil {
+		return nil, fmt.Errorf("failed to create user podcast: %w", result.Error)
+	}
+
+	return userPodcast, nil
 }
 
 func (r *PodcastRepository) IsTrending(podcastID uuid.UUID) (bool, error) {
