@@ -5,6 +5,7 @@ import (
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
 	categoryRepository "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/repositories"
 	podcastsDto "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/dtos"
+	podcastsModels "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/models"
 	podcasts "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/repositories"
 	"github.com/google/uuid"
 )
@@ -134,7 +135,7 @@ func (s *PodcastService) GetPodcastDetails(podcastID string, userID string) base
 		return base.SetErrorMessage("Failed to get podcast details", err)
 	}
 
-	podcastDetailsDto := podcastsDto.MapToPodcastDTO(podcast, userUUID)
+	podcastDetailsDto := podcastsDto.MapToPodcastDTO(*podcast, userUUID)
 
 	return base.SetData(podcastDetailsDto)
 }
@@ -220,4 +221,74 @@ func (s *PodcastService) ToggleDownloadPodcast(userID, podcastID string) base.Re
 	}
 
 	return base.SetSuccessMessage("Download " + action + " successfully")
+}
+
+func (s *PodcastService) TrackUserPodcast(userID, podcastID string, trackUserPodcastRequestDto podcastsDto.TrackUserPodcastRequestDto) base.Response {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid user ID", err)
+	}
+
+	pid, err := uuid.Parse(podcastID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid podcast ID", err)
+	}
+
+	resumePosition := trackUserPodcastRequestDto.ResumePosition
+	isCompleted := trackUserPodcastRequestDto.IsCompleted
+	trackUserPodcast, err := s.PodcastRepository.TrackUserPodcast(uid, pid, resumePosition, isCompleted)
+	if err != nil {
+		return base.SetErrorMessage("Failed to track podcast", err)
+	}
+
+	if trackUserPodcast == nil {
+		podcast, err := s.PodcastRepository.FindPodcastByID(pid)
+		if err != nil {
+			return base.SetErrorMessage("Failed to get podcast details", err)
+		}
+		if podcast == nil {
+			return base.SetErrorMessage("Failed to get podcast ID", err)
+		}
+		userPodcast := &podcastsModels.UserPodcast{
+			UserID:         uid,
+			PodcastID:      podcast.ID,
+			CategoryID:     podcast.CategoryID,
+			ResumePosition: 0,
+			IsCompleted:    false,
+		}
+		trackUserPodcast, err = s.PodcastRepository.CreateUserPodcast(userPodcast)
+		if err != nil {
+			return base.SetErrorMessage("Failed to track podcast", err)
+		}
+	}
+
+	TrackUserPodcastDto := podcastsDto.TrackUserPodcastResponseDto{
+		ResumePosition: trackUserPodcast.ResumePosition,
+		IsCompleted:    trackUserPodcast.IsCompleted,
+	}
+	return base.SetData(TrackUserPodcastDto)
+}
+
+func (s *PodcastService) UserWatchHistory(userID string, getUserWatchHistoryRequestDto podcastsDto.GetUserWatchHistoryRequestDto) base.Response {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("Invalid user ID", err)
+	}
+
+	page := getUserWatchHistoryRequestDto.Page
+	perPage := getUserWatchHistoryRequestDto.PerPage
+	offset := (page - 1) * perPage
+	limit := perPage
+
+	userCompletedPodcasts, totalCount, err := s.PodcastRepository.GetUserCompletedPodcasts(uid, offset, limit)
+	if err != nil {
+		return base.SetErrorMessage("Failed to get all podcasts by IDs", err)
+	}
+
+	podcastDtos := make([]interface{}, len(*userCompletedPodcasts))
+	for i, podcast := range *userCompletedPodcasts {
+		podcastDtos[i] = podcastsDto.MapToPodcastDTO(podcast, uid)
+	}
+
+	return base.SetPaginatedResponse(podcastDtos, page, perPage, totalCount)
 }

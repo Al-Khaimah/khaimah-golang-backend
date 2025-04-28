@@ -114,3 +114,32 @@ func (h *PodcastHandler) DownloadPodcast(c echo.Context) error {
 	response := h.PodcastService.ToggleDownloadPodcast(userID, podcastID)
 	return c.JSON(response.HTTPStatus, response)
 }
+
+func (h *PodcastHandler) TrackUserPodcast(c echo.Context) error {
+	podcastID := c.Param("podcast_id")
+	userID := c.Get("user_id").(string)
+
+	var trackUserPodcastRequestDto podcastsDto.TrackUserPodcastRequestDto
+	res, ok := base.BindAndValidate(c, &trackUserPodcastRequestDto)
+	if !ok {
+		return c.JSON(res.HTTPStatus, res)
+	}
+
+	response := h.PodcastService.TrackUserPodcast(userID, podcastID, trackUserPodcastRequestDto)
+	return c.JSON(response.HTTPStatus, response)
+}
+
+func (h *PodcastHandler) UserWatchHistory(c echo.Context) error {
+	userID := c.Get("user_id").(string)
+
+	var getUserWatchHistoryRequestDto podcastsDto.GetUserWatchHistoryRequestDto
+	res, ok := base.BindAndValidate(c, &getUserWatchHistoryRequestDto)
+	if !ok {
+		return c.JSON(res.HTTPStatus, res)
+	}
+
+	getUserWatchHistoryRequestDto.BindPaginationParams(c)
+
+	response := h.PodcastService.UserWatchHistory(userID, getUserWatchHistoryRequestDto)
+	return c.JSON(response.HTTPStatus, response)
+}
