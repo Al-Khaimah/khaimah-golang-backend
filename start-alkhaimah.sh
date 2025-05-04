@@ -16,6 +16,23 @@ else
   # 💻 Local development mode (Docker services only)
   echo "🐘 Starting PostgreSQL Docker service..."
   docker-compose up -d
+
+  # ✅ Check if Postgres port is listening
+  echo "🔍 Verifying if PostgreSQL is listening on port 5432..."
+  sleep 3  # allow some time for container to boot
+  if ! sudo lsof -i :5432 | grep LISTEN >/dev/null; then
+    echo "⚠️ PostgreSQL not listening on port 5432. Attempting docker-compose restart..."
+    docker-compose restart
+    sleep 3  # wait again after restart
+    if ! sudo lsof -i :5432 | grep LISTEN >/dev/null; then
+      echo "❌ PostgreSQL still not listening on port 5432. Exiting."
+      exit 1
+    else
+      echo "✅ PostgreSQL is now listening on port 5432 after restart."
+    fi
+  else
+    echo "✅ PostgreSQL is listening on port 5432."
+  fi
 fi
 
 # 📦 Common Steps (Both Server & Local)
