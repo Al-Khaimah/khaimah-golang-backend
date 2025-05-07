@@ -161,13 +161,13 @@ func (s *PodcastService) LikePodcast(podcastID string, addLikes int) base.Respon
 	})
 }
 
-func (s *PodcastService) GetPodcastsByCategory(getPodcastsByCategoryRequestDto podcastsDto.GetPodcastsByCategoryRequestDto, userID string) base.Response {
+func (s *PodcastService) GetPodcastsByCategory(getPodcastsByCategoryRequestDto podcastsDto.GetPodcastsByCategoryRequestDto, userID string, categoryID string) base.Response {
 	userUUID, err := uuid.Parse(userID)
 	if err != nil {
 		return base.SetErrorMessage("Invalid user ID", err)
 	}
 
-	categoryUUID, err := uuid.Parse(getPodcastsByCategoryRequestDto.CategoryID)
+	categoryUUID, err := uuid.Parse(categoryID)
 
 	page := getPodcastsByCategoryRequestDto.Page
 	perPage := getPodcastsByCategoryRequestDto.PerPage

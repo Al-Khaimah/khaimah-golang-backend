@@ -90,6 +90,7 @@ func (h *PodcastHandler) LikePodcast(c echo.Context) error {
 }
 
 func (h *PodcastHandler) GetPodcastsByCategory(c echo.Context) error {
+	categoryID := c.Param("category_id")
 	userID, ok := c.Get("user_id").(string)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "Invalid or missing user ID"))
@@ -103,7 +104,7 @@ func (h *PodcastHandler) GetPodcastsByCategory(c echo.Context) error {
 
 	getPodcastsByCategoryRequestDto.BindPaginationParams(c)
 
-	response := h.PodcastService.GetPodcastsByCategory(getPodcastsByCategoryRequestDto, userID)
+	response := h.PodcastService.GetPodcastsByCategory(getPodcastsByCategoryRequestDto, userID, categoryID)
 	return c.JSON(response.HTTPStatus, response)
 }
 

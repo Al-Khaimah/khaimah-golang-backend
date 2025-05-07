@@ -78,7 +78,6 @@ type LikePodcastResponseDto struct {
 
 type GetPodcastsByCategoryRequestDto struct {
 	base.PaginationRequest
-	CategoryID string `json:"category_id" param:"category_id" validate:"omitempty,uuid" message:"Category ID must be a valid ID format"`
 }
 
 type GetPodcastsByCategoryResponseDto struct {
