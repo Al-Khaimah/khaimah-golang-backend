@@ -1,8 +1,12 @@
 package utils
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"strings"
 
@@ -72,4 +76,43 @@ func ConvertIDsToCategories(categoryIDs []string) []models.Category {
 	}
 
 	return categoryList
+}
+
+func SendSlackNotification(message string) error {
+	webhookURL := os.Getenv("SLACK_WEBHOOK_URL")
+	if webhookURL == "" {
+		return fmt.Errorf("SLACK_WEBHOOK_URL environment variable not set")
+	}
+
+	slackPayload := map[string]string{"text": message}
+	payloadBytes, err := json.Marshal(slackPayload)
+	if err != nil {
+		return fmt.Errorf("failed to marshal Slack payload: %w", err)
+	}
+
+	req, err := http.NewRequest("POST", webhookURL, bytes.NewBuffer(payloadBytes))
+	if err != nil {
+		return fmt.Errorf("failed to create Slack HTTP request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send Slack notification request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 300 {
+		bodyBytes, readErr := io.ReadAll(resp.Body)
+		bodyString := ""
+		if readErr == nil {
+			bodyString = string(bodyBytes)
+		}
+		return fmt.Errorf("failed to send Slack notification: received status code %d, response: %s", resp.StatusCode, bodyString)
+	}
+
+	io.Copy(io.Discard, resp.Body)
+
+	return nil
 }

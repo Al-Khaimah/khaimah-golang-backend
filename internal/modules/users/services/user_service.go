@@ -88,6 +88,9 @@ func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) base.Response {
 		ExpiresAt:  "never",
 	}
 
+	slackMessage := fmt.Sprintf("🚀 New user account created:\n%s (%s)", createdUser.FirstName, createdUser.Email)
+	_ = utils.SendSlackNotification(slackMessage)
+
 	return base.SetData(userResponse, "Account created successfully")
 }
 
