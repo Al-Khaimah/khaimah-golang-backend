@@ -2,8 +2,9 @@ package config
 
 import (
 	"fmt"
-	"gorm.io/gorm/logger"
 	"log"
+
+	"gorm.io/gorm/logger"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

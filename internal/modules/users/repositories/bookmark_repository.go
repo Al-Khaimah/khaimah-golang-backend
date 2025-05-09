@@ -35,7 +35,6 @@ func (r *BookmarkRepository) FindUserBookmarks(userID uuid.UUID) ([]podcastModel
 func (r *BookmarkRepository) IsBookmarked(userID, podcastID uuid.UUID) (bool, error) {
 	var bookmark podcastModel.BookmarkPodcast
 	err := r.DB.Where("user_id = ? AND podcast_id = ?", userID, podcastID).First(&bookmark).Error
-
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return false, nil

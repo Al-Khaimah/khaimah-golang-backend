@@ -2,12 +2,13 @@ package migrations
 
 import (
 	"fmt"
-	notifications "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/notifications/models"
-	users "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/models"
 	"log"
 	"math/rand"
 	"os"
 	"time"
+
+	notifications "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/notifications/models"
+	users "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/models"
 
 	"github.com/bxcodec/faker/v3"
 	"gorm.io/gorm"

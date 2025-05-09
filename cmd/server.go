@@ -1,9 +1,10 @@
 package main
 
 import (
+	"log"
+
 	"github.com/Al-Khaimah/khaimah-golang-backend/config"
 	"github.com/labstack/echo/v4"
-	"log"
 )
 
 func startServer(e *echo.Echo, setPort ...string) {
