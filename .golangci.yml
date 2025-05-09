@@ -1,0 +1,28 @@
+linters:
+  enable:
+    - unused
+    - gofmt
+    - gofumpt
+    - goimports
+    - misspell
+    - stylecheck
+
+linters-settings:
+  gofmt:
+    simplify: true
+  gofumpt:
+    extra-rules: true
+  goimports:
+    local-prefixes: github.com/Al-Khaimah/khaimah-golang-backend
+
+run:
+  timeout: 5m
+  tests: true
+  skip-dirs:
+    - vendor
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gosec

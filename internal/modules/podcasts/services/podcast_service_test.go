@@ -98,8 +98,7 @@ func TestGetPodcastsByCategory_InvalidUserID(t *testing.T) {
 			Page:    1,
 			PerPage: 10,
 		},
-		CategoryID: categoryID,
-	}, "invalid-uuid")
+	}, "invalid-uuid", categoryID)
 
 	assert.Equal(t, "Invalid user ID", response.MessageTitle)
 }
@@ -115,8 +114,7 @@ func TestGetPodcastsByCategory_InvalidCategoryID(t *testing.T) {
 			Page:    1,
 			PerPage: 10,
 		},
-		CategoryID: "invalid-category-id",
-	}, userID)
+	}, userID, "invalid-category-id")
 
 	assert.Equal(t, "Invalid category ID format", response.MessageTitle)
 }
