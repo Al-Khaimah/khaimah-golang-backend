@@ -74,7 +74,6 @@ func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) base.Response {
 	}
 
 	token, err := generateJWT(createdUser)
-
 	if err != nil {
 		return base.SetErrorMessage("Failed to generate token", err)
 	}

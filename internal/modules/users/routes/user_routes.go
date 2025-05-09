@@ -34,5 +34,4 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	adminGroup.POST("/mark-user-admin/:user_id", newUserHandler.MarkUserAsAdmin)
 	adminGroup.GET("/all-users", newUserHandler.GetAllUsers)
 	adminGroup.DELETE("/user/:id", newUserHandler.DeleteUser)
-
 }

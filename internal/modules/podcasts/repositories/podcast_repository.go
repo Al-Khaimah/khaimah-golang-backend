@@ -143,6 +143,7 @@ func (r *PodcastRepository) FindPodcastsByCategoryID(categoryID uuid.UUID, offse
 
 	return podcasts, int(totalCount), nil
 }
+
 func (r *PodcastRepository) AddDownload(userID, podcastID uuid.UUID) error {
 	var user users.User
 	if err := r.DB.Preload("Downloads").First(&user, "id = ?", userID).Error; err != nil {
@@ -197,7 +198,6 @@ func (r *PodcastRepository) IsCompleted(userID, podcastID uuid.UUID) (bool, erro
 	err := r.DB.Model(&podcastsModels.UserPodcast{}).
 		Where("user_id = ? AND podcast_id = ? AND is_completed = ?", userID, podcastID, true).
 		Count(&count).Error
-
 	if err != nil {
 		return false, err
 	}

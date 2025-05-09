@@ -41,5 +41,5 @@ type BookmarkPodcast struct {
 }
 
 func (BookmarkPodcast) TableName() string {
-	return "user_bookmarks" //by default it will be named 'user_bookmarks'
+	return "user_bookmarks" // by default it will be named 'user_bookmarks'
 }

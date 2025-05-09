@@ -21,5 +21,4 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	adminCategoryGroup.POST("/", newCategoryHandler.CreateCategory)
 	adminCategoryGroup.PUT("/:id", newCategoryHandler.UpdateCategory)
 	adminCategoryGroup.DELETE("/:id", newCategoryHandler.DeleteCategory)
-
 }
