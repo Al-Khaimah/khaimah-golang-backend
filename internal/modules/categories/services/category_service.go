@@ -81,6 +81,7 @@ func (s *CategoryService) UpdateCategory(categoryID string, updateData categoryD
 	if updateData.Description != "" {
 		category.Description = updateData.Description
 	}
+	category.IsNewsIntensive = updateData.IsNewsIntensive
 
 	err = s.CategoryRepo.UpdateCategory(category)
 	if err != nil {
