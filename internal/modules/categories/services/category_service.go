@@ -39,8 +39,9 @@ func (s *CategoryService) GetAllCategories() base.Response {
 
 func (s *CategoryService) CreateCategory(categoryData categoryDTO.Category) base.Response {
 	newCategory := &models.Category{
-		Name:        categoryData.Name,
-		Description: categoryData.Description,
+		Name:            categoryData.Name,
+		Description:     categoryData.Description,
+		IsNewsIntensive: categoryData.IsNewsIntensive,
 	}
 
 	createdCategory, err := s.CategoryRepo.CreateCategory(newCategory)
@@ -53,9 +54,10 @@ func (s *CategoryService) CreateCategory(categoryData categoryDTO.Category) base
 	}
 
 	categoryResponse := categoryDTO.Category{
-		ID:          createdCategory.ID.String(),
-		Name:        createdCategory.Name,
-		Description: createdCategory.Description,
+		ID:              createdCategory.ID.String(),
+		Name:            createdCategory.Name,
+		Description:     createdCategory.Description,
+		IsNewsIntensive: createdCategory.IsNewsIntensive,
 	}
 
 	return base.SetData(categoryResponse, "Category created successfully")
@@ -89,9 +91,10 @@ func (s *CategoryService) UpdateCategory(categoryID string, updateData categoryD
 	}
 
 	categoryResponse := categoryDTO.Category{
-		ID:          category.ID.String(),
-		Name:        category.Name,
-		Description: category.Description,
+		ID:              category.ID.String(),
+		Name:            category.Name,
+		Description:     category.Description,
+		IsNewsIntensive: category.IsNewsIntensive,
 	}
 
 	return base.SetData(categoryResponse, "Category updated successfully")
