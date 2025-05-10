@@ -28,9 +28,10 @@ func (s *CategoryService) GetAllCategories() base.Response {
 	var categoryResponse []interface{}
 	for _, category := range categories {
 		categoryResponse = append(categoryResponse, categoryDTO.Category{
-			ID:          category.ID.String(),
-			Name:        category.Name,
-			Description: category.Description,
+			ID:              category.ID.String(),
+			Name:            category.Name,
+			Description:     category.Description,
+			IsNewsIntensive: category.IsNewsIntensive,
 		})
 	}
 
