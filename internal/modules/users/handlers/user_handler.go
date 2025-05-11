@@ -93,6 +93,16 @@ func (h *UserHandler) ChangePassword(c echo.Context) error {
 	return c.JSON(response.HTTPStatus, response)
 }
 
+func (h *UserHandler) DeleteMyAccount(c echo.Context) error {
+	userID, ok := c.Get("user_id").(string)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "Invalid or missing user ID"))
+	}
+
+	response := h.UserService.DeleteUser(userID)
+	return c.JSON(response.HTTPStatus, response)
+}
+
 func (h *UserHandler) GetAllUsers(c echo.Context) error {
 	response := h.UserService.GetAllUsers(c)
 	return c.JSON(response.HTTPStatus, response)
