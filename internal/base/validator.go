@@ -2,6 +2,7 @@ package base
 
 import (
 	"reflect"
+	"unicode"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -12,7 +13,10 @@ type CustomValidator struct {
 }
 
 func RegisterValidator(e *echo.Echo) {
-	e.Validator = &CustomValidator{Validator: validator.New()}
+	v := validator.New()
+
+	v.RegisterValidation("passwordvalidator", passwordvalidator)
+	e.Validator = &CustomValidator{Validator: v}
 }
 
 func (cv *CustomValidator) Validate(i interface{}) error {
@@ -62,4 +66,27 @@ func formatValidationErrors(err error, dto interface{}) string {
 		}
 	}
 	return errors
+}
+
+func passwordvalidator(fl validator.FieldLevel) bool {
+	password := fl.Field().String()
+
+	if len(password) < 6 {
+		return false
+	}
+
+	hasLetter := false
+	hasNumber := false
+	for _, c := range password {
+		if unicode.IsLetter(c) {
+			hasLetter = true
+		} else if unicode.IsDigit(c) {
+			hasNumber = true
+		}
+
+		if hasLetter && hasNumber {
+			return true
+		}
+	}
+	return hasLetter && hasNumber
 }
