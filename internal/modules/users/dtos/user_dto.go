@@ -11,7 +11,7 @@ type SignupRequestDTO struct {
 	LastName   string   `json:"last_name" validate:"omitempty"`
 	Email      string   `json:"email" validate:"required,email"`
 	Categories []string `json:"categories" validate:"required"`
-	Password   string   `json:"password" validate:"required"`
+	Password   string   `json:"password" validate:"required,passwordvalidator" message:"Password must be at least 6 characters and contain both letters and numbers"`
 }
 
 type SignupResponseDTO struct {
