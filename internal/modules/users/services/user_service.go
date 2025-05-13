@@ -35,10 +35,10 @@ func NewUserService(userRepo *repos.UserRepository, authRepo *repos.AuthReposito
 func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) base.Response {
 	existingUser, err := s.UserRepo.FindOneByEmail(user.Email)
 	if err != nil {
-		return base.SetErrorMessage("Database error", err)
+		return base.SetErrorMessage("خطأ في قاعدة البيانات")
 	}
 	if existingUser != nil {
-		return base.SetErrorMessage("This email is already in use", "User already exists")
+		return base.SetErrorMessage("هذا البريد الإلكتروني قيد الاستخدام بالفعل")
 	}
 
 	categories := utils.ConvertIDsToCategories(user.Categories)
@@ -51,16 +51,16 @@ func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) base.Response {
 
 	createdUser, err := s.UserRepo.CreateUser(newUser)
 	if err != nil {
-		return base.SetErrorMessage("Failed to create user", err)
+		return base.SetErrorMessage("فشل في إنشاء المستخدم")
 	}
 
 	if createdUser == nil {
-		return base.SetErrorMessage("Failed to create user", "User creation returned nil")
+		return base.SetErrorMessage("فشل في إنشاء المستخدم")
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return base.SetErrorMessage("Failed to hash password", err)
+		return base.SetErrorMessage("فشل في تشفير كلمة المرور")
 	}
 
 	newUserAuth := &models.IamAuth{
@@ -70,12 +70,12 @@ func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) base.Response {
 	}
 
 	if err := s.AuthRepo.CreateUserAuth(newUserAuth); err != nil {
-		return base.SetErrorMessage("Failed to create user authentication", err)
+		return base.SetErrorMessage("فشل في إنشاء توثيق المستخدم")
 	}
 
 	token, err := generateJWT(createdUser)
 	if err != nil {
-		return base.SetErrorMessage("Failed to generate token", err)
+		return base.SetErrorMessage("فشل في إنشاء الرمز")
 	}
 	userResponse := userDTO.SignupResponseDTO{
 		ID:         createdUser.ID.String(),
@@ -96,29 +96,29 @@ func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) base.Response {
 func (s *UserService) LoginUser(user *userDTO.LoginRequestDTO) base.Response {
 	existingUser, err := s.UserRepo.FindOneByEmail(user.Email)
 	if err != nil {
-		return base.SetErrorMessage("Database error", err)
+		return base.SetErrorMessage("خطأ في قاعدة البيانات")
 	}
 	if existingUser == nil {
-		return base.SetErrorMessage("Invalid credentials", "Email not found")
+		return base.SetErrorMessage("البريد الإلكتروني غير موجود")
 	}
 
 	userAuth, err := s.AuthRepo.FindAuthByUserID(existingUser.ID)
 	if err != nil {
-		return base.SetErrorMessage("Authentication error", err)
+		return base.SetErrorMessage("خطأ في التوثيق")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(userAuth.Password), []byte(user.Password)); err != nil {
-		return base.SetErrorMessage("Invalid credentials", "Incorrect password")
+		return base.SetErrorMessage("كلمة المرور غير صحيحة")
 	}
 
 	token, err := generateJWT(existingUser)
 	if err != nil {
-		return base.SetErrorMessage("Failed to generate token", err)
+		return base.SetErrorMessage("فشل في إنشاء الرمز")
 	}
 
 	userAuth.IsActive = true
 	if err := s.AuthRepo.UpdateAuth(userAuth); err != nil {
-		return base.SetErrorMessage("Failed to update authentication", err)
+		return base.SetErrorMessage("فشل في تحديث التوثيق")
 	}
 
 	loginResponse := userDTO.LoginResponseDTO{
@@ -148,23 +148,23 @@ func generateJWT(user *models.User) (string, error) {
 func (s *UserService) LogoutUser(c echo.Context) base.Response {
 	token := c.Request().Header.Get("Authorization")
 	if token == "" {
-		return base.SetErrorMessage("Unauthorized", "No token provided")
+		return base.SetErrorMessage("غير مصرح به")
 	}
 
 	userID, err := utils.ExtractUserIDFromToken(token)
 	if err != nil {
-		return base.SetErrorMessage("Invalid token", err)
+		return base.SetErrorMessage("رمز غير صالح")
 	}
 
 	authRecord, err := s.AuthRepo.FindAuthByUserID(userID)
 	if err != nil {
-		return base.SetErrorMessage("Failed to find user authentication", err)
+		return base.SetErrorMessage("فشل في العثور على توثيق المستخدم")
 	}
 
 	authRecord.IsActive = false
 	err = s.AuthRepo.UpdateAuth(authRecord)
 	if err != nil {
-		return base.SetErrorMessage("Failed to logout", err)
+		return base.SetErrorMessage("فشل في تسجيل الخروج")
 	}
 
 	return base.SetSuccessMessage("Successfully logged out")
@@ -173,15 +173,15 @@ func (s *UserService) LogoutUser(c echo.Context) base.Response {
 func (s *UserService) GetUserProfile(userID string) base.Response {
 	uid, err := uuid.Parse(userID)
 	if err != nil {
-		return base.SetErrorMessage("Invalid User ID", err)
+		return base.SetErrorMessage("الرقم التعريفي للمستخدم غير صالح")
 	}
 
 	user, err := s.UserRepo.FindOneByID(uid)
 	if err != nil {
-		return base.SetErrorMessage("Failed to fetch user profile", err)
+		return base.SetErrorMessage("فشل في استرجاع ملف تعريف المستخدم")
 	}
 	if user == nil {
-		return base.SetErrorMessage("User not found", "No user exists with this ID")
+		return base.SetErrorMessage("لم يتم العثور على مستخدم بهذا الرقم التعريفي")
 	}
 
 	profileResponse := userDTO.UserProfileDTO{
@@ -198,15 +198,15 @@ func (s *UserService) GetUserProfile(userID string) base.Response {
 func (s *UserService) UpdateUserProfile(userID string, updateData userDTO.UpdateProfileDTO) base.Response {
 	uid, err := uuid.Parse(userID)
 	if err != nil {
-		return base.SetErrorMessage("Invalid User ID", err)
+		return base.SetErrorMessage("الرقم التعريفي للمستخدم غير صالح")
 	}
 
 	user, err := s.UserRepo.FindOneByID(uid)
 	if err != nil {
-		return base.SetErrorMessage("Database error", err)
+		return base.SetErrorMessage("خطأ في قاعدة البيانات")
 	}
 	if user == nil {
-		return base.SetErrorMessage("User not found", "No user exists with this ID")
+		return base.SetErrorMessage("لم يتم العثور على مستخدم بهذا الرقم التعريفي")
 	}
 
 	if updateData.FirstName != "" {
@@ -218,7 +218,7 @@ func (s *UserService) UpdateUserProfile(userID string, updateData userDTO.Update
 
 	err = s.UserRepo.UpdateUser(user)
 	if err != nil {
-		return base.SetErrorMessage("Failed to update profile", err)
+		return base.SetErrorMessage("فشل في تحديث الملف الشخصي")
 	}
 
 	profileResponse := userDTO.UserProfileDTO{
@@ -234,22 +234,22 @@ func (s *UserService) UpdateUserProfile(userID string, updateData userDTO.Update
 func (s *UserService) UpdateUserPreferences(userID string, updateData userDTO.UpdatePreferencesDTO) base.Response {
 	uid, err := uuid.Parse(userID)
 	if err != nil {
-		return base.SetErrorMessage("Invalid User ID", err)
+		return base.SetErrorMessage("الرقم التعريفي للمستخدم غير صالح")
 	}
 
 	user, err := s.UserRepo.FindOneByID(uid)
 	if err != nil {
-		return base.SetErrorMessage("Database error", err)
+		return base.SetErrorMessage("خطأ في قاعدة البيانات")
 	}
 	if user == nil {
-		return base.SetErrorMessage("User not found", "No user exists with this ID")
+		return base.SetErrorMessage("لم يتم العثور على مستخدم بهذا الرقم التعريفي")
 	}
 
 	newCategories := utils.ConvertIDsToCategories(updateData.Categories)
 
 	err = s.UserRepo.UpdateUserPreferences(user, newCategories)
 	if err != nil {
-		return base.SetErrorMessage("Failed to update preferences", err)
+		return base.SetErrorMessage("فشل في تحديث التفضيلات")
 	}
 
 	preferencesResponse := userDTO.UpdatePreferencesDTO{
@@ -262,33 +262,33 @@ func (s *UserService) UpdateUserPreferences(userID string, updateData userDTO.Up
 func (s *UserService) ChangePassword(userID string, req userDTO.ChangePasswordDTO) base.Response {
 	uid, err := uuid.Parse(userID)
 	if err != nil {
-		return base.SetErrorMessage("Invalid User ID", err)
+		return base.SetErrorMessage("الرقم التعريفي للمستخدم غير صالح")
 	}
 
 	userAuth, err := s.AuthRepo.FindAuthByUserID(uid)
 	if err != nil {
-		return base.SetErrorMessage("Database error", err)
+		return base.SetErrorMessage("خطأ في قاعدة البيانات")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(userAuth.Password), []byte(req.OldPassword))
 	if err != nil {
-		return base.SetErrorMessage("Invalid credentials", "Old password is incorrect")
+		return base.SetErrorMessage("كلمة المرور القديمة غير صحيحة")
 	}
 
 	if req.OldPassword == req.NewPassword {
-		return base.SetErrorMessage("Invalid request", "New password must be different from old password")
+		return base.SetErrorMessage("يجب أن تكون كلمة المرور الجديدة مختلفة عن كلمة المرور القديمة")
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
-		return base.SetErrorMessage("Failed to hash password", err)
+		return base.SetErrorMessage("فشل في تشفير كلمة المرور")
 	}
 
 	userAuth.Password = string(hashedPassword)
 
 	err = s.AuthRepo.UpdateAuth(userAuth)
 	if err != nil {
-		return base.SetErrorMessage("Failed to change password", err)
+		return base.SetErrorMessage("فشل في تغيير كلمة المرور")
 	}
 
 	return base.SetSuccessMessage("Password changed successfully")
@@ -297,7 +297,7 @@ func (s *UserService) ChangePassword(userID string, req userDTO.ChangePasswordDT
 func (s *UserService) GetAllUsers(c echo.Context) base.Response {
 	users, err := s.UserRepo.FindAllUsers()
 	if err != nil {
-		return base.SetErrorMessage("Failed to fetch users", err)
+		return base.SetErrorMessage("فشل في استرجاع المستخدمين")
 	}
 
 	var userResponses []interface{}
@@ -315,20 +315,20 @@ func (s *UserService) GetAllUsers(c echo.Context) base.Response {
 func (s *UserService) MarkUserAdmin(userID string) base.Response {
 	uid, err := uuid.Parse(userID)
 	if err != nil {
-		return base.SetErrorMessage("Invalid user ID", err)
+		return base.SetErrorMessage("الرقم التعريفي للمستخدم غير صالح")
 	}
 
 	user, err := s.UserRepo.FindOneByID(uid)
 	if err != nil {
-		return base.SetErrorMessage("Failed to fetch user", err)
+		return base.SetErrorMessage("فشل في استرجاع المستخدم")
 	}
 	if user == nil {
-		return base.SetErrorMessage("User not found", nil)
+		return base.SetErrorMessage("المستخدم غير موجود")
 	}
 
 	user.UserType = users.UserTypeAdmin
 	if err := s.UserRepo.UpdateUser(user); err != nil {
-		return base.SetErrorMessage("Failed to update user", err)
+		return base.SetErrorMessage("فشل في تحديث المستخدم")
 	}
 
 	return base.SetSuccessMessage("User marked as admin successfully")
@@ -337,28 +337,28 @@ func (s *UserService) MarkUserAdmin(userID string) base.Response {
 func (s *UserService) DeleteUser(userID string) base.Response {
 	uid, err := uuid.Parse(userID)
 	if err != nil {
-		return base.SetErrorMessage("Invalid User ID", err)
+		return base.SetErrorMessage("الرقم التعريفي للمستخدم غير صالح")
 	}
 
 	user, err := s.UserRepo.FindOneByID(uid)
 	if err != nil {
-		return base.SetErrorMessage("Database error", err)
+		return base.SetErrorMessage("خطأ في قاعدة البيانات")
 	}
 	if user == nil {
-		return base.SetErrorMessage("User not found", "No user exists with this ID")
+		return base.SetErrorMessage("لم يتم العثور على مستخدم بهذا الرقم التعريفي")
 	}
 
 	if user.UserType == users.UserTypeAdmin {
-		return base.SetErrorMessage("Admin User", "You cant delete an Admin User")
+		return base.SetErrorMessage("لا يمكنك حذف حساب مستخدم يمتلك صلاحيات المشرف")
 	}
 
 	if user.DeletedAt.Valid {
-		return base.SetErrorMessage("User already deleted", "This user account has already been removed")
+		return base.SetErrorMessage("تم حذف هذا الحساب مسبقاً")
 	}
 
 	err = s.UserRepo.DeleteUser(uid)
 	if err != nil {
-		return base.SetErrorMessage("Failed to delete user", err)
+		return base.SetErrorMessage("فشل في حذف المستخدم")
 	}
 
 	return base.SetSuccessMessage("User deleted successfully")
@@ -389,12 +389,12 @@ func (s *UserService) GetUserCategoriesIDs(userID string) ([]string, error) {
 func (s *UserService) GetUserBookmarks(userID string) base.Response {
 	uid, err := uuid.Parse(userID)
 	if err != nil {
-		return base.SetErrorMessage("Invalid User ID", err)
+		return base.SetErrorMessage("الرقم التعريفي للمستخدم غير صالح")
 	}
 
 	bookmarks, err := s.BookmarksRepo.FindUserBookmarks(uid)
 	if err != nil {
-		return base.SetErrorMessage("Failed to fetch bookmarks", err)
+		return base.SetErrorMessage("فشل في استرجاع الإشارات المرجعية")
 	}
 
 	bookmarksResponse := make([]interface{}, len(bookmarks))
@@ -408,17 +408,17 @@ func (s *UserService) GetUserBookmarks(userID string) base.Response {
 func (s *UserService) ToggleBookmarkPodcast(userID, podcastID string) base.Response {
 	uid, err := uuid.Parse(userID)
 	if err != nil {
-		return base.SetErrorMessage("Invalid User ID", err)
+		return base.SetErrorMessage("الرقم التعريفي للمستخدم غير صالح")
 	}
 
 	pid, err := uuid.Parse(podcastID)
 	if err != nil {
-		return base.SetErrorMessage("Invalid Podcast ID", err)
+		return base.SetErrorMessage("الرقم التعريفي للبودكاست غير صالح")
 	}
 
 	exists, err := s.BookmarksRepo.IsBookmarked(uid, pid)
 	if err != nil {
-		return base.SetErrorMessage("Failed to check bookmark", err)
+		return base.SetErrorMessage("فشل في التحقق من الإشارة المرجعية")
 	}
 
 	var action string
@@ -430,7 +430,7 @@ func (s *UserService) ToggleBookmarkPodcast(userID, podcastID string) base.Respo
 		action = "added"
 	}
 	if err != nil {
-		return base.SetErrorMessage("Failed to toggle bookmark", err)
+		return base.SetErrorMessage("فشل في تبديل الإشارة المرجعية")
 	}
 
 	return base.SetSuccessMessage("Bookmark " + action + " successfully")
@@ -439,12 +439,12 @@ func (s *UserService) ToggleBookmarkPodcast(userID, podcastID string) base.Respo
 func (s *UserService) GetDownloadedPodcasts(userID string) base.Response {
 	uid, err := uuid.Parse(userID)
 	if err != nil {
-		return base.SetErrorMessage("Invalid User ID", err)
+		return base.SetErrorMessage("الرقم التعريفي للمستخدم غير صالح")
 	}
 
 	downloads, err := s.UserRepo.FindDownloadedPodcasts(uid)
 	if err != nil {
-		return base.SetErrorMessage("Failed to fetch downloaded podcasts", err)
+		return base.SetErrorMessage("فشل في استرجاع البودكاست التي تم تنزيلها")
 	}
 
 	response := make([]interface{}, len(downloads))
