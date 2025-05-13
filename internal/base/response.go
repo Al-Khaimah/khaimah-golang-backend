@@ -56,7 +56,7 @@ func SetSuccessMessage(title string, description ...string) Response {
 	return newResponse(http.StatusOK, SuccessStatus, title, nil, nil, description...)
 }
 
-func SetErrorMessage(title string, errDetails interface{}) Response {
+func SetErrorMessage(title string, errDetails ...interface{}) Response {
 	return newResponse(http.StatusBadRequest, ErrorStatus, title, nil, errDetails)
 }
 

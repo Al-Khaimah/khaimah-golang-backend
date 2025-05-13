@@ -47,7 +47,7 @@ func (h *UserHandler) LogoutUser(c echo.Context) error {
 func (h *UserHandler) GetUserProfile(c echo.Context) error {
 	userID, ok := c.Get("user_id").(string)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "Invalid or missing user ID"))
+		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("غير مصرح به"))
 	}
 	response := h.UserService.GetUserProfile(userID)
 	return c.JSON(response.HTTPStatus, response)
@@ -56,7 +56,7 @@ func (h *UserHandler) GetUserProfile(c echo.Context) error {
 func (h *UserHandler) UpdateUserProfile(c echo.Context) error {
 	userID, ok := c.Get("user_id").(string)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "Invalid or missing user ID"))
+		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("غير مصرح به"))
 	}
 	var updateDTO userDTO.UpdateProfileDTO
 	if res, ok := base.BindAndValidate(c, &updateDTO); !ok {
@@ -82,7 +82,7 @@ func (h *UserHandler) UpdateUserPreferences(c echo.Context) error {
 func (h *UserHandler) ChangePassword(c echo.Context) error {
 	userID, ok := c.Get("user_id").(string)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "Invalid or missing user ID"))
+		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("غير مصرح به"))
 	}
 	var passwordDTO userDTO.ChangePasswordDTO
 	if res, ok := base.BindAndValidate(c, &passwordDTO); !ok {
@@ -96,7 +96,7 @@ func (h *UserHandler) ChangePassword(c echo.Context) error {
 func (h *UserHandler) DeleteMyAccount(c echo.Context) error {
 	userID, ok := c.Get("user_id").(string)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "Invalid or missing user ID"))
+		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("غير مصرح به"))
 	}
 
 	response := h.UserService.DeleteUser(userID)
