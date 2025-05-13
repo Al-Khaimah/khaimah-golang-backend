@@ -43,6 +43,10 @@ func AuthMiddleware(authRepo *repos.AuthRepository) echo.MiddlewareFunc {
 			userRepo := repos.NewUserRepository(config.GetDB())
 			user, _ := userRepo.FindOneByID(userID)
 
+			if user == nil {
+				return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "User is deleted"))
+			}
+
 			isAdmin := user.UserType == users.UserTypeAdmin
 
 			c.Set("is_admin", isAdmin)
