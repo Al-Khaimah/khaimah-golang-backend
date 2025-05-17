@@ -50,6 +50,7 @@ func MapToPodcastDTO(podcast podcastsModels.Podcast, userID uuid.UUID) PodcastDt
 		IsBookmarked:  isBookmarked,
 		IsCompleted:   isCompleted,
 		IsTrending:    isTrending,
+		CreatedAt:     podcast.CreatedAt.Format("2006-01-02 15:04:05"),
 	}
 }
 

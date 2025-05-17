@@ -129,6 +129,7 @@ func (r *PodcastRepository) FindPodcastsByCategoryID(categoryID uuid.UUID, offse
 		Where("category_id = ?", categoryID).
 		Offset(offset).
 		Limit(limit).
+		Order("created_at DESC").
 		Find(&podcasts)
 	if result.Error != nil {
 		return nil, 0, fmt.Errorf("failed to find podcasts by category ID: %w", result.Error)
