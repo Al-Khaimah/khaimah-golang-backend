@@ -1,6 +1,8 @@
 package users
 
 import (
+	"net/http"
+
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/middlewares"
 	userHandler "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/handlers"
 	userRepository "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/repositories"
@@ -35,4 +37,8 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	adminGroup.POST("/mark-user-admin/:user_id", newUserHandler.MarkUserAsAdmin)
 	adminGroup.GET("/all-users", newUserHandler.GetAllUsers)
 	adminGroup.DELETE("/user/:id", newUserHandler.DeleteUser)
+
+	e.GET("/", func(c echo.Context) error {
+		return c.String(http.StatusOK, "hello khaimah")
+	})
 }
