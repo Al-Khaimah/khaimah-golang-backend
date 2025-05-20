@@ -38,7 +38,10 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	adminGroup.GET("/all-users", newUserHandler.GetAllUsers)
 	adminGroup.DELETE("/user/:id", newUserHandler.DeleteUser)
 
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "hello khaimah")
-	})
+	monitor := func(c echo.Context) error {
+		return c.String(http.StatusOK, "khaimah is live")
+	}
+	e.GET("/", monitor)
+	e.HEAD("/", monitor)
+
 }
