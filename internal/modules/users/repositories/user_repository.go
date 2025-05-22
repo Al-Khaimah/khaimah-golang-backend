@@ -130,3 +130,15 @@ func (r *UserRepository) UpdateUserPreferences(user *models.User, categories []c
 	}
 	return nil
 }
+
+func (r *UserRepository) FindOrCreateByEmail(email string) (*models.User, error) {
+	var user models.User
+	if err := r.DB.Where("email = ?", email).First(&user).Error; err == nil {
+		return &user, nil
+	}
+	user = models.User{Email: email}
+	if err := r.DB.Create(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}

@@ -15,13 +15,16 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	userRepo := userRepository.NewUserRepository(db)
 	authRepo := userRepository.NewAuthRepository(db)
 	bookmarksRepo := userRepository.NewBookmarkRepository(db)
+	newAuthService := userService.NewAuthService(userRepo)
 	newUserService := userService.NewUserService(userRepo, authRepo, bookmarksRepo)
 	newUserHandler := userHandler.NewUserHandler(newUserService)
+	newAuthHandler := userHandler.NewAuthHandler(newAuthService)
 
 	authGroup := e.Group("/auth")
 	authGroup.POST("/signup", newUserHandler.CreateUser)
 	authGroup.POST("/login", newUserHandler.LoginUser)
 	authGroup.POST("/logout", newUserHandler.LogoutUser, middlewares.AuthMiddleware(authRepo))
+	authGroup.POST("/oauth", newAuthHandler.OAuthLogin)
 
 	userGroup := e.Group("/user", middlewares.AuthMiddleware(authRepo))
 	userGroup.GET("/profile", newUserHandler.GetUserProfile)
