@@ -63,8 +63,8 @@ func NewAppleProvider() *AppleProvider {
 	}
 }
 
-func (g *GoogleProvider) Exchange(ctx context.Context, idToken string) (string, error) {
-	p, err := idtoken.Validate(ctx, idToken, g.ClientID)
+func (g *GoogleProvider) Exchange(ctx context.Context, token string) (string, error) {
+	p, err := idtoken.Validate(ctx, token, g.ClientID)
 	if err != nil {
 		return "", fmt.Errorf("google token invalid: %w", err)
 	}
@@ -72,17 +72,13 @@ func (g *GoogleProvider) Exchange(ctx context.Context, idToken string) (string, 
 	return email, nil
 }
 
-func (g *GoogleProvider) GetClientSecret(ctx context.Context) (string, error) {
-	return "", nil
-}
-
-func (a *AppleProvider) Exchange(ctx context.Context, idToken string) (string, error) {
+func (a *AppleProvider) Exchange(ctx context.Context, token string) (string, error) {
 	set, err := jwk.Fetch(ctx, a.JWKSUrl)
 	if err != nil {
 		return "", fmt.Errorf("apple jwk fetch failed: %w", err)
 	}
 
-	tok, err := jwt.ParseWithClaims(idToken, jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
+	tok, err := jwt.ParseWithClaims(token, jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
 		kid, ok := t.Header["kid"].(string)
 		if !ok {
 			return nil, fmt.Errorf("missing kid")
@@ -124,6 +120,10 @@ func (a *AppleProvider) Exchange(ctx context.Context, idToken string) (string, e
 	return email, nil
 }
 
+func (g *GoogleProvider) GetClientSecret(ctx context.Context) (string, error) {
+	return "", nil
+}
+
 func (a *AppleProvider) GetClientSecret(ctx context.Context) (string, error) {
 	if a.PrivateKey == "" || a.KeyID == "" || a.TeamID == "" || a.ClientID == "" {
 		return "", fmt.Errorf("missing required Apple credentials")
@@ -159,13 +159,13 @@ func (a *AppleProvider) GetClientSecret(ctx context.Context) (string, error) {
 	return clientSecret, nil
 }
 
-func (s *AuthService) Login(ctx context.Context, providerKey, idToken string) base.Response {
+func (s *AuthService) Login(ctx context.Context, providerKey, token string) base.Response {
 	prov, ok := s.providers[providerKey]
 	if !ok {
 		return base.SetErrorMessage("unsupported provider")
 	}
 
-	email, err := prov.Exchange(ctx, idToken)
+	email, err := prov.Exchange(ctx, token)
 	if err != nil {
 		return base.SetErrorMessage("invalid token: " + err.Error())
 	}
