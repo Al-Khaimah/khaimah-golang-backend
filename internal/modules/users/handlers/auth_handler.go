@@ -20,12 +20,13 @@ func NewAuthHandler(authService *users.AuthService) *AuthHandler {
 }
 
 func (h *AuthHandler) OAuthLogin(c echo.Context) error {
-	var oAuthRequestDTO authDTO.OAuthRequesDTOt
+	token := c.Param("token")
+	var oAuthRequestDTO authDTO.OAuthRequestDTO
 	if res, ok := base.BindAndValidate(c, &oAuthRequestDTO); !ok {
 		return c.JSON(res.HTTPStatus, res)
 	}
 
-	response := h.AuthService.Login(c.Request().Context(), oAuthRequestDTO.Provider, oAuthRequestDTO.Token)
+	response := h.AuthService.Login(c.Request().Context(), oAuthRequestDTO.Provider, token)
 	if response.Errors != nil {
 		code := http.StatusUnauthorized
 		if response.Errors == "unsupported provider" {

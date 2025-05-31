@@ -1,6 +1,5 @@
 package users
 
-type OAuthRequesDTOt struct {
+type OAuthRequestDTO struct {
 	Provider string `json:"provider"`
-	Token    string `json:"Token"`
 }
