@@ -23,8 +23,8 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	authGroup := e.Group("/auth")
 	authGroup.POST("/signup", newUserHandler.CreateUser)
 	authGroup.POST("/login", newUserHandler.LoginUser)
+	authGroup.POST("/oauth", newAuthHandler.OAuthLogin)
 	authGroup.POST("/logout", newUserHandler.LogoutUser, middlewares.AuthMiddleware(authRepo))
-	authGroup.POST("/oauth/:token", newAuthHandler.OAuthLogin)
 
 	userGroup := e.Group("/user", middlewares.AuthMiddleware(authRepo))
 	userGroup.GET("/profile", newUserHandler.GetUserProfile)
