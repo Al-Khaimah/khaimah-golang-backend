@@ -231,32 +231,31 @@ func (s *UserService) UpdateUserProfile(userID string, updateData userDTO.Update
 	return base.SetData(profileResponse, "Profile updated successfully")
 }
 
-func (s *UserService) UpdateUserPreferences(userID string, updateData userDTO.UpdatePreferencesDTO) base.Response {
+func (s *UserService) UpdateUserPreferences(userID string, updateData userDTO.UpdatePreferencesDTO) (*userDTO.UpdatePreferencesDTO, error) {
 	uid, err := uuid.Parse(userID)
 	if err != nil {
-		return base.SetErrorMessage("الرقم التعريفي للمستخدم غير صالح")
+		return nil, fmt.Errorf("الرقم التعريفي للمستخدم غير صالح")
 	}
 
 	user, err := s.UserRepo.FindOneByID(uid)
 	if err != nil {
-		return base.SetErrorMessage("خطأ في قاعدة البيانات")
+		return nil, fmt.Errorf("خطأ في قاعدة البيانات")
 	}
 	if user == nil {
-		return base.SetErrorMessage("لم يتم العثور على مستخدم بهذا الرقم التعريفي")
+		return nil, fmt.Errorf("لم يتم العثور على مستخدم بهذا الرقم التعريفي")
 	}
 
 	newCategories := utils.ConvertIDsToCategories(updateData.Categories)
 
 	err = s.UserRepo.UpdateUserPreferences(user, newCategories)
 	if err != nil {
-		return base.SetErrorMessage("فشل في تحديث التفضيلات")
+		return nil, fmt.Errorf("فشل في تحديث التفضيلات")
 	}
 
 	preferencesResponse := userDTO.UpdatePreferencesDTO{
-		Categories: utils.ConvertCategoriesToString(user.Categories),
+		Categories: utils.ConvertCategoriesToStringIDs(user.Categories),
 	}
-
-	return base.SetData(preferencesResponse, "User preferences updated successfully")
+	return &preferencesResponse, nil
 }
 
 func (s *UserService) ChangePassword(userID string, req userDTO.ChangePasswordDTO) base.Response {
@@ -453,4 +452,41 @@ func (s *UserService) GetDownloadedPodcasts(userID string) base.Response {
 	}
 
 	return base.SetData(response)
+}
+
+func (s *UserService) CreateSSOUser(userID string, createSSOUserRequestDTO userDTO.CreateSSOUserRequestDTO) base.Response {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("الرقم التعريفي للمستخدم غير صالح")
+	}
+
+	user, err := s.UserRepo.FindOneByID(uid)
+	if err != nil {
+		return base.SetErrorMessage("خطأ في قاعدة البيانات")
+	}
+
+	user.FirstName = createSSOUserRequestDTO.FirstName
+
+	err = s.UserRepo.UpdateUser(user)
+	if err != nil {
+		return base.SetErrorMessage("فشل في تحديث الملف الشخصي")
+	}
+
+	updatePreferencesDTO := userDTO.UpdatePreferencesDTO{
+		Categories: createSSOUserRequestDTO.Categories,
+	}
+
+	updatedPreferences, err := s.UpdateUserPreferences(userID, updatePreferencesDTO)
+	if err != nil {
+		return base.SetErrorMessage("فشل في تحديث التفضيلات")
+	}
+
+	userData := userDTO.CreateSSOUserResponseDTO{
+		ID:         user.ID.String(),
+		FirstName:  user.FirstName,
+		Email:      user.Email,
+		Categories: utils.ConvertIDsToCategories(updatedPreferences.Categories),
+	}
+
+	return base.SetData(userData, "تم انشاء حساب المستخدم بنجاح")
 }

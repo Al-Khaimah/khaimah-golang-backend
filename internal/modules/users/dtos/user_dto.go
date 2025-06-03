@@ -68,3 +68,15 @@ type UpdatePreferencesResponseDTO struct {
 type GetUserBookmarksResponseDTO struct {
 	Podcasts []podcastDTO.PodcastDto `json:"podcasts"`
 }
+
+type CreateSSOUserRequestDTO struct {
+	FirstName  string   `json:"first_name" validate:"required"`
+	Categories []string `json:"categories" validate:"required"`
+}
+
+type CreateSSOUserResponseDTO struct {
+	ID         string                `json:"id"`
+	FirstName  string                `json:"first_name"`
+	Email      string                `json:"email"`
+	Categories []categories.Category `json:"categories"`
+}

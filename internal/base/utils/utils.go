@@ -49,7 +49,7 @@ func FormatEmail(email string) string {
 	return strings.ToLower(strings.TrimSpace(email))
 }
 
-func ConvertCategoriesToString(categories []models.Category) []string {
+func ConvertCategoriesToStringIDs(categories []models.Category) []string {
 	categoryIDs := make([]string, len(categories))
 	for i, category := range categories {
 		categoryIDs[i] = category.ID.String()
