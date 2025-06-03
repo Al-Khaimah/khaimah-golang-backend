@@ -25,6 +25,7 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	authGroup.POST("/login", newUserHandler.LoginUser)
 	authGroup.POST("/oauth", newAuthHandler.OAuthLogin)
 	authGroup.POST("/logout", newUserHandler.LogoutUser, middlewares.AuthMiddleware(authRepo))
+	authGroup.POST("/oauth/user", newUserHandler.CreateSSOUser, middlewares.AuthMiddleware(authRepo))
 
 	userGroup := e.Group("/user", middlewares.AuthMiddleware(authRepo))
 	userGroup.GET("/profile", newUserHandler.GetUserProfile)

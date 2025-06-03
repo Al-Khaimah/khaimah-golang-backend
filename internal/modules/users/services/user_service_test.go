@@ -45,10 +45,10 @@ func TestGetUserProfile_InvalidUserID(t *testing.T) {
 // TestUpdateUserPreferences_InvalidUserID tests validation of user ID
 func TestUpdateUserPreferences_InvalidUserID(t *testing.T) {
 	service := UserService{}
-	response := service.UpdateUserPreferences("invalid-user-id", userDTO.UpdatePreferencesDTO{
+	_, err := service.UpdateUserPreferences("invalid-user-id", userDTO.UpdatePreferencesDTO{
 		Categories: []string{"category1", "category2"},
 	})
-	assert.Equal(t, "Invalid User ID", response.MessageTitle)
+	assert.Equal(t, "الرقم التعريفي للمستخدم غير صالح", err.Error())
 }
 
 // TestGetUserBookmarks_InvalidUserID tests validation of user ID

@@ -68,15 +68,21 @@ func (h *UserHandler) UpdateUserProfile(c echo.Context) error {
 }
 
 func (h *UserHandler) UpdateUserPreferences(c echo.Context) error {
-	userID := c.Get("user_id").(string)
+	userID, ok := c.Get("user_id").(string)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("غير مصرح به"))
+	}
 
 	var preferencesDTO userDTO.UpdatePreferencesDTO
 	if res, ok := base.BindAndValidate(c, &preferencesDTO); !ok {
 		return c.JSON(res.HTTPStatus, res)
 	}
 
-	response := h.UserService.UpdateUserPreferences(userID, preferencesDTO)
-	return c.JSON(response.HTTPStatus, response)
+	response, err := h.UserService.UpdateUserPreferences(userID, preferencesDTO)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, base.SetErrorMessage(err.Error()))
+	}
+	return c.JSON(http.StatusOK, base.SetData(response, "تم تحديث تفضيلات المستخدم بنجاح"))
 }
 
 func (h *UserHandler) ChangePassword(c echo.Context) error {
@@ -84,6 +90,7 @@ func (h *UserHandler) ChangePassword(c echo.Context) error {
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("غير مصرح به"))
 	}
+
 	var passwordDTO userDTO.ChangePasswordDTO
 	if res, ok := base.BindAndValidate(c, &passwordDTO); !ok {
 		return c.JSON(res.HTTPStatus, res)
@@ -123,23 +130,47 @@ func (h *UserHandler) DeleteUser(c echo.Context) error {
 }
 
 func (h *UserHandler) GetUserBookmarks(c echo.Context) error {
-	userID := c.Get("user_id").(string)
+	userID, ok := c.Get("user_id").(string)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("غير مصرح به"))
+	}
 
 	response := h.UserService.GetUserBookmarks(userID)
 	return c.JSON(response.HTTPStatus, response)
 }
 
 func (h *UserHandler) GetDownloadedPodcasts(c echo.Context) error {
-	userID := c.Get("user_id").(string)
+	userID, ok := c.Get("user_id").(string)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("غير مصرح به"))
+	}
 
 	response := h.UserService.GetDownloadedPodcasts(userID)
 	return c.JSON(response.HTTPStatus, response)
 }
 
 func (h *UserHandler) ToggleBookmarkPodcast(c echo.Context) error {
-	userID := c.Get("user_id").(string)
+	userID, ok := c.Get("user_id").(string)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("غير مصرح به"))
+	}
 	podcastID := c.Param("podcast_id")
 
 	response := h.UserService.ToggleBookmarkPodcast(userID, podcastID)
+	return c.JSON(response.HTTPStatus, response)
+}
+
+func (h *UserHandler) CreateSSOUser(c echo.Context) error {
+	userID, ok := c.Get("user_id").(string)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("غير مصرح به"))
+	}
+
+	var createSSOUserRequestDTO userDTO.CreateSSOUserRequestDTO
+	if res, ok := base.BindAndValidate(c, &createSSOUserRequestDTO); !ok {
+		return c.JSON(res.HTTPStatus, res)
+	}
+
+	response := h.UserService.CreateSSOUser(userID, createSSOUserRequestDTO)
 	return c.JSON(response.HTTPStatus, response)
 }
