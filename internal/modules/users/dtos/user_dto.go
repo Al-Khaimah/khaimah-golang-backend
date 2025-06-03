@@ -6,15 +6,6 @@ import (
 	podcastDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/dtos"
 )
 
-type AuthenticaationBaseDTO struct {
-	ID         string                `json:"id"`
-	FirstName  string                `json:"first_name"`
-	LastName   string                `json:"last_name"`
-	Email      string                `json:"email"`
-	Categories []categories.Category `json:"categories"`
-	Token      string                `json:"token"`
-	ExpiresAt  string                `json:"expires_at"`
-}
 type SignupRequestDTO struct {
 	FirstName  string   `json:"first_name" validate:"required"`
 	LastName   string   `json:"last_name" validate:"omitempty"`
