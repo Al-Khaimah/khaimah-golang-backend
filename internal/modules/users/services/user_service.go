@@ -90,7 +90,7 @@ func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) base.Response {
 	slackMessage := fmt.Sprintf("🚀 New user account created:\n%s (%s)", createdUser.FirstName, createdUser.Email)
 	_ = utils.SendSlackNotification(slackMessage)
 
-	return base.SetData(userResponse, "Account created successfully")
+	return base.SetData(userResponse, "تم انشاء الحساب بنجاح")
 }
 
 func (s *UserService) LoginUser(user *userDTO.LoginRequestDTO) base.Response {
@@ -360,7 +360,7 @@ func (s *UserService) DeleteUser(userID string) base.Response {
 		return base.SetErrorMessage("فشل في حذف المستخدم")
 	}
 
-	return base.SetSuccessMessage("User deleted successfully")
+	return base.SetSuccessMessage("تم حذف حساب المستخدم بنجاح")
 }
 
 func (s *UserService) GetUserCategoriesIDs(userID string) ([]string, error) {

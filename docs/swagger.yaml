@@ -1,0 +1,472 @@
+definitions:
+  echo.HTTPError:
+    properties:
+      message: {}
+    type: object
+  github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_categories_dtos.Category:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      is_news_intensive:
+        type: boolean
+      name:
+        type: string
+    type: object
+  github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_categories_models.Category:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      id:
+        type: string
+      is_news_intensive:
+        type: boolean
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_podcasts_dtos.PodcastDto:
+    properties:
+      audio_url:
+        type: string
+      category_id:
+        type: string
+      content:
+        type: string
+      cover_image_description:
+        type: string
+      cover_image_url:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      duration:
+        type: integer
+      id:
+        type: string
+      is_bookmarked:
+        type: boolean
+      is_completed:
+        type: boolean
+      is_downloaded:
+        type: boolean
+      is_trending:
+        type: boolean
+      likes_count:
+        type: integer
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.ChangePasswordDTO:
+    properties:
+      new_password:
+        example: NewPa55word
+        minLength: 6
+        type: string
+      old_password:
+        example: OldPa55
+        type: string
+    required:
+    - new_password
+    - old_password
+    type: object
+  github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.GetUserBookmarksResponseDTO:
+    properties:
+      podcasts:
+        items:
+          $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_podcasts_dtos.PodcastDto'
+        type: array
+    type: object
+  github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.LoginRequestDTO:
+    properties:
+      email:
+        example: john.doe@example.com
+        type: string
+      password:
+        example: Pa55word
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.LoginResponseDTO:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_categories_models.Category'
+        type: array
+      email:
+        example: john.doe@example.com
+        type: string
+      expires_at:
+        example: "2025-06-05T15:04:05Z"
+        type: string
+      first_name:
+        example: John
+        type: string
+      id:
+        example: abcd1234
+        type: string
+      last_name:
+        example: Doe
+        type: string
+      token:
+        example: eyJhbGciOiJIUzI1Ni...
+        type: string
+    type: object
+  github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.SignupRequestDTO:
+    properties:
+      categories:
+        example:
+        - '["f6a75a87-d695-4ee9-a095-5a79edce4eb8"'
+        - '"1db71f60-f276-431d-934c-fd84f8014566"]'
+        items:
+          type: string
+        type: array
+      email:
+        example: john.doe@example.com
+        type: string
+      first_name:
+        example: John
+        type: string
+      last_name:
+        example: Doe
+        type: string
+      password:
+        example: Pa55word
+        type: string
+    required:
+    - categories
+    - email
+    - first_name
+    - password
+    type: object
+  github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.UpdatePreferencesDTO:
+    properties:
+      categories:
+        example:
+        - '["sports"'
+        - '"music"]'
+        items:
+          type: string
+        type: array
+    required:
+    - categories
+    type: object
+  github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.UpdatePreferencesResponseDTO:
+    properties:
+      categories:
+        $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_categories_dtos.Category'
+    type: object
+  github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.UpdateProfileDTO:
+    properties:
+      first_name:
+        example: Johnny
+        type: string
+      last_name:
+        example: Doey
+        type: string
+    type: object
+  github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.UserProfileDTO:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_categories_models.Category'
+        type: array
+      email:
+        example: john.doe@example.com
+        type: string
+      first_name:
+        example: John
+        type: string
+      id:
+        example: abcd1234
+        type: string
+      last_name:
+        example: Doe
+        type: string
+    required:
+    - categories
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+info:
+  contact: {}
+paths:
+  /admin/all-users:
+    get:
+      description: Returns a list of all users (only accessible by admins)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.UserProfileDTO'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get all users (admin only)
+      tags:
+      - users
+  /admin/mark-user-admin/:user_id:
+    post:
+      description: Grants admin privileges to a specific user (admin only)
+      parameters:
+      - description: ID of the user to promote
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User marked as admin
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Mark a user as admin
+      tags:
+      - users
+  /admin/user/:id:
+    delete:
+      description: Deletes any user by ID (admin only)
+      parameters:
+      - description: ID of the user to delete
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User deleted successfully
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Delete a user (admin only)
+      tags:
+      - users
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns a JWT token
+      parameters:
+      - description: Login payload
+        in: body
+        name: loginDTO
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.LoginRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.LoginResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Login a user
+      tags:
+      - users
+  /auth/logout:
+    post:
+      description: Invalidates the current JWT token (if any) and logs out
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logged out successfully
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Logout current user
+      tags:
+      - users
+  /auth/signup:
+    post:
+      consumes:
+      - application/json
+      description: Registers a user with first name, last name, email, categories,
+        and password
+      parameters:
+      - description: Signup payload
+        in: body
+        name: signupDTO
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.SignupRequestDTO'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.SignupRequestDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.SignupRequestDTO'
+      summary: Create a new user
+      tags:
+      - users
+  /user/bookmarks:
+    get:
+      description: Retrieves a list of podcasts bookmarked by the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.GetUserBookmarksResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get bookmarked podcasts of current user
+      tags:
+      - users
+  /user/profile:
+    get:
+      description: Returns profile info for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.UserProfileDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get profile of current user
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Updates first name and/or last name of the authenticated user
+      parameters:
+      - description: Fields to update
+        in: body
+        name: updateDTO
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.UpdateProfileDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.UserProfileDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Update profile of current user
+      tags:
+      - users
+  /user/profile/delete-my-account:
+    delete:
+      description: Deletes the authenticated user's account
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: تم حذف حساب المستخدم بنجاح
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Delete user's account
+      tags:
+      - users
+  /user/profile/password:
+    patch:
+      consumes:
+      - application/json
+      description: Changes the password of the authenticated user
+      parameters:
+      - description: Old and new passwords
+        in: body
+        name: passwordDTO
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.ChangePasswordDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password changed successfully
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Change password
+      tags:
+      - users
+  /user/profile/preferences:
+    patch:
+      consumes:
+      - application/json
+      description: Updates the authenticated user's categories/preferences
+      parameters:
+      - description: New categories list
+        in: body
+        name: preferencesDTO
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.UpdatePreferencesDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.UpdatePreferencesResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Update user preferences
+      tags:
+      - users
+swagger: "2.0"
