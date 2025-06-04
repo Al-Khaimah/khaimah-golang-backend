@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/middlewares"
-
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/migrations"
+
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/routes"
 
 	"github.com/Al-Khaimah/khaimah-golang-backend/config"
