@@ -6,7 +6,6 @@ import (
 	notifications "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/notifications/routes"
 	podcasts "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/routes"
 	users "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/routes"
-	echoSwagger "github.com/swaggo/echo-swagger"
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -18,5 +17,5 @@ func RegisterAllRoutes(e *echo.Echo, db *gorm.DB) {
 	podcasts.RegisterRoutes(e, db)
 	notifications.RegisterRoutes(e)
 
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
+	RegisterSwaggerRoutes(e)
 }
