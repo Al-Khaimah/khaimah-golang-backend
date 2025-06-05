@@ -9,10 +9,11 @@ import (
 
 type User struct {
 	base.Model
-	FirstName string         `gorm:"type:varchar(100)" json:"first_name"`
-	LastName  string         `gorm:"type:varchar(100)" json:"last_name"`
-	UserType  users.UserType `gorm:"type:varchar(20);default:'free'" json:"user_type"`
-	Email     string         `gorm:"type:varchar(255);index" json:"email"`
+	FirstName   string         `gorm:"type:varchar(100)" json:"first_name"`
+	LastName    string         `gorm:"type:varchar(100)" json:"last_name"`
+	UserType    users.UserType `gorm:"type:varchar(20);default:'free'" json:"user_type"`
+	Email       string         `gorm:"type:varchar(255);index" json:"email"`
+	PhoneNumber string         `gorm:"type:varchar(255);index" json:"phone_number"`
 
 	Categories []categories.Category `gorm:"many2many:user_categories" json:"categories"`
 	Bookmarks  []podcasts.Podcast    `gorm:"many2many:user_bookmarks" json:"bookmarks,omitempty"`

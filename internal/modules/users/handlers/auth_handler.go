@@ -41,3 +41,45 @@ func (h *AuthHandler) OAuthLogin(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func (h *AuthHandler) SendOTPViaSMS(c echo.Context) error {
+	var sendOTPViaSMSRequestDTO authDTO.SendOTPViaSMSRequestDTO
+	res, ok := base.BindAndValidate(c, &sendOTPViaSMSRequestDTO)
+	if !ok {
+		return c.JSON(res.HTTPStatus, res)
+	}
+
+	err := h.AuthService.SendOTPViaSMS(sendOTPViaSMSRequestDTO)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	return c.JSON(http.StatusOK, base.SetSuccessMessage("تم ارسال البريد الالكتروني بنجاح")) // TODO: show general message if user is not found
+}
+
+func (h *AuthHandler) SendOTPViaEmail(c echo.Context) error {
+	var sendOTPViaEmailRequestDTO authDTO.SendOTPViaEmailRequestDTO
+	res, ok := base.BindAndValidate(c, &sendOTPViaEmailRequestDTO)
+	if !ok {
+		return c.JSON(res.HTTPStatus, res)
+	}
+
+	err := h.AuthService.SendOTPViaEmail(c.Request().Context(), sendOTPViaEmailRequestDTO)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	return c.JSON(http.StatusOK, base.SetSuccessMessage("تم ارسال البريد الالكتروني بنجاح")) // TODO: show general message if user is not found
+}
+
+func (h *AuthHandler) VerifyOTP(c echo.Context) error {
+	var verifyOTPRequestDTO authDTO.VerifyOTPRequestDTO
+	res, ok := base.BindAndValidate(c, &verifyOTPRequestDTO)
+	if !ok {
+		return c.JSON(res.HTTPStatus, res)
+	}
+
+	err := h.AuthService.VerifyOTP(verifyOTPRequestDTO)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	return c.JSON(http.StatusOK, base.SetSuccessMessage("تم التحقق من رمز الدخول بنجاح"))
+}
