@@ -37,6 +37,15 @@ func (r *AuthRepository) FindAuthByUserID(userID uuid.UUID) (*models.IamAuth, er
 	return &auth, nil
 }
 
+func (r *AuthRepository) FindAuthByOTP(otp int) (*models.IamAuth, error) {
+	var auth models.IamAuth
+	result := r.DB.Where("otp = ?", otp).First(&auth)
+	if result.Error != nil {
+		return nil, fmt.Errorf("failed to find authentication record: %w", result.Error)
+	}
+	return &auth, nil
+}
+
 func (r *AuthRepository) UpdateAuth(auth *models.IamAuth) error {
 	result := r.DB.Save(auth)
 	if result.Error != nil {
