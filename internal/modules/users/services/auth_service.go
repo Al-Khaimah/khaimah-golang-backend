@@ -1,34 +1,19 @@
 package users
 
 import (
-	"bytes"
 	"context"
 	"crypto/x509"
-	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"math/rand"
-	"net/http"
 	"os"
 	"time"
 
-	resend "github.com/resend/resend-go/v2"
-
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
-	authDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/dtos"
-	models "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/models"
 	userRepository "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/repositories"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/lestrrat-go/jwx/jwk"
 	"google.golang.org/api/idtoken"
 )
-
-type AuthService struct {
-	userRepo  *userRepository.UserRepository
-	authRepo  *userRepository.AuthRepository
-	providers map[string]Provider
-	jwtSecret []byte
-}
 
 type Provider interface {
 	Exchange(ctx context.Context, idToken string) (string, error)
@@ -45,6 +30,12 @@ type AppleProvider struct {
 	TeamID     string
 	KeyID      string
 	PrivateKey string
+}
+
+type AuthService struct {
+	userRepo  *userRepository.UserRepository
+	providers map[string]Provider
+	jwtSecret []byte
 }
 
 func NewAuthService(repo *userRepository.UserRepository) *AuthService {
@@ -211,186 +202,4 @@ func (s *AuthService) ValidateWithProvider(ctx context.Context, providerKey, tok
 
 	_, err := prov.Exchange(ctx, token)
 	return err == nil, err
-}
-
-func (s *AuthService) SendOTPViaSMS(sendOTPViaSMSRequestDTO authDTO.SendOTPViaSMSRequestDTO) error {
-	user, err := s.userRepo.FindOneByPhoneNumber(sendOTPViaSMSRequestDTO.Phonenumber)
-	if err != nil {
-		return fmt.Errorf("لم يتم العثور على مستخدم بالرقم الجوال")
-	}
-
-	userAuth, err := s.authRepo.FindAuthByUserID(user.ID)
-	if err != nil {
-		return fmt.Errorf("حدث خطأ اثناء العثور على بيانات المستخدم")
-	}
-
-	otp, err := s.issueOTP(userAuth)
-	if err != nil {
-		return fmt.Errorf("حدث خطأ أثناء إنشاء رمز التحقق")
-	}
-
-	phoneNumbers := []string{user.PhoneNumber}
-	message := fmt.Sprintf("رمز التحقق الخاص بك %d", otp) // TODO: use appropriate sms message
-	err = s.SendSMS(phoneNumbers, message)
-	if err != nil {
-		return fmt.Errorf("حدث حطأ اثناء ارسال رسالة نصية الى المستخدم")
-	}
-
-	return nil
-}
-
-func (s *AuthService) SendOTPViaEmail(ctx context.Context, sendOTPViaEmailRequestDTO authDTO.SendOTPViaEmailRequestDTO) error {
-	user, err := s.userRepo.FindOneByEmail(sendOTPViaEmailRequestDTO.Email)
-	if err != nil {
-		return fmt.Errorf("لم يتم العثور على مستخدم بالرقم الجوال")
-	}
-
-	userAuth, err := s.authRepo.FindAuthByUserID(user.ID)
-	if err != nil {
-		return fmt.Errorf("حدث خطأ اثناء العثور على بيانات المستخدم")
-	}
-
-	otp, err := s.issueOTP(userAuth)
-	if err != nil {
-		return fmt.Errorf("حدث خطأ أثناء إنشاء رمز التحقق")
-	}
-
-	email := []string{user.Email}
-	err = s.SendEmail(ctx, email, otp)
-	if err != nil {
-		return fmt.Errorf("حدث حطأ اثناء ارسال رسالة نصية الى المستخدم")
-	}
-
-	return nil
-}
-
-func (s *AuthService) issueOTP(userAuth *models.IamAuth) (int, error) {
-	if time.Now().After(userAuth.ExpiresAt) {
-		userAuth.FailedAttempts = 0
-	}
-
-	if userAuth.FailedAttempts >= 3 && time.Now().Before(userAuth.ExpiresAt) {
-		minutesLeft := max(int(time.Until(userAuth.ExpiresAt).Minutes()), 0)
-		minuteWord := getMinuteWord(minutesLeft)
-		return 0, fmt.Errorf("لقد تجاوزت عدد المحاولات، حاول بعد %d %s", minutesLeft, minuteWord)
-	}
-
-	otp, err := generateOTP()
-	if err != nil {
-		return 0, fmt.Errorf("حدث خطأ أثناء إنشاء رمز التحقق")
-	}
-
-	userAuth.OTP = otp
-	userAuth.ExpiresAt = time.Now().Add(15 * time.Minute)
-	userAuth.FailedAttempts = 0
-
-	if err := s.authRepo.UpdateAuth(userAuth); err != nil {
-		return 0, fmt.Errorf("حدث خطأ أثناء حفظ رمز التحقق")
-	}
-
-	return otp, nil
-}
-
-func (s *AuthService) SendSMS(phoneNumbers []string, message string) error {
-	data := authDTO.SendSMSRequest{
-		To:      phoneNumbers,
-		Message: message,
-		Token:   os.Getenv("SMS_PROVIDER_TOKEN"),
-	}
-
-	jsonData, _ := json.Marshal(data)
-
-	req, _ := http.NewRequest("POST", "https://api.sendmsg.dev/message/batch", bytes.NewBuffer(jsonData))
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer resp.Body.Close()
-	return nil
-}
-
-func (s *AuthService) SendEmail(ctx context.Context, emails []string, otp int) error {
-	client := resend.NewClient(os.Getenv("EMAIL_PROVIDER_TOKEN"))
-
-	htmlContent := fmt.Sprintf(`
-		<p>رمز التحقق الخاص بك هو:</p>
-		<h2>%d</h2>
-		<p>يرجى استخدامه خلال 15 دقيقة.</p>
-	`, otp)
-
-	params := &resend.SendEmailRequest{
-		From:    os.Getenv("EMAIL_FROM"),
-		To:      emails,
-		Subject: "رمز التحقق من الخيمة", // TODO: Replace with proper subject
-		Html:    htmlContent,
-	}
-
-	_, err := client.Emails.SendWithContext(ctx, params)
-	if err != nil {
-		return fmt.Errorf("حدث حطأ اثناء ارسال بريد الكتروني الى المستخدم")
-	}
-	return nil
-}
-
-func getMinuteWord(n int) string {
-	switch {
-	case n == 1:
-		return "دقيقة"
-	case n == 2:
-		return "دقيقتين"
-	case n >= 3 && n <= 10:
-		return "دقائق"
-	default:
-		return "دقيقة"
-	}
-}
-
-func generateOTP() (int, error) {
-	firstDigit := rand.Intn(9) + 1
-
-	remaining := rand.Intn(1000)
-
-	otp := firstDigit*1000 + remaining
-	return otp, nil
-}
-
-func (s *AuthService) VerifyOTP(verifyOTPRequestDTO authDTO.VerifyOTPRequestDTO) error {
-	// reset failed attempts to zero upon 1- successful otp, 2- last otp is expired
-	var err error
-	var user *models.User
-	if verifyOTPRequestDTO.Identifier == authDTO.IdentifierEmail {
-		user, err = s.userRepo.FindOneByEmail(verifyOTPRequestDTO.Type)
-	} else {
-		user, err = s.userRepo.FindOneByPhoneNumber(verifyOTPRequestDTO.Type)
-	}
-	if err != nil {
-		return fmt.Errorf("لم يتم العثور على مستخدم")
-	}
-
-	userAuth, err := s.authRepo.FindAuthByUserID(user.ID)
-	if err != nil {
-		return fmt.Errorf("حدث خطأ اثناء العثور على بيانات المستخدم")
-	}
-
-	if time.Now().After(userAuth.ExpiresAt) {
-		return fmt.Errorf("مدة صلاحية رمز التحقق منتهية, يرجى طلب رمز جديد")
-	}
-
-	if userAuth.OTP != verifyOTPRequestDTO.OTP {
-		userAuth.FailedAttempts++
-		s.authRepo.UpdateAuth(userAuth)
-		return fmt.Errorf("رمز التحقق المدخل غير صحيح")
-	}
-
-	userAuth.ExpiresAt = time.Now()
-	userAuth.FailedAttempts = 0
-
-	err = s.authRepo.UpdateAuth(userAuth)
-	if err != nil {
-		return fmt.Errorf("حدث خطأ أثناء حفظ بيانات التحقق")
-	}
-	return nil
 }

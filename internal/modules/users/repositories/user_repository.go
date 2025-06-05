@@ -142,21 +142,3 @@ func (r *UserRepository) FindOrCreateByEmail(email string) (*models.User, error)
 	}
 	return &user, nil
 }
-
-func (r *UserRepository) FindOneByPhoneNumber(phoneNumber string) (*models.User, error) {
-	var user models.User
-
-	result := r.DB.
-		Preload("Categories").
-		Preload("Bookmarks").
-		Preload("Downloads").
-		Where("phone_number = ?", phoneNumber).First(&user)
-	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("failed to find user: %w", result.Error)
-	}
-
-	return &user, nil
-}
