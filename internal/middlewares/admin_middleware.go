@@ -18,7 +18,7 @@ func AdminMiddleware() echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			authHeader := c.Request().Header.Get("Authorization")
 			if authHeader == "" {
-				return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "No token provided"))
+				return c.JSON(http.StatusUnauthorized, base.SetErrorMessage("Unauthorized", "No headers token provided"))
 			}
 
 			token := strings.TrimPrefix(authHeader, "Bearer ")

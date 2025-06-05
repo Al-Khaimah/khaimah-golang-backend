@@ -22,7 +22,7 @@ func NewAuthHandler(authService *users.AuthService) *AuthHandler {
 func (h *AuthHandler) OAuthLogin(c echo.Context) error {
 	token := c.QueryParam("token")
 	if token == "" {
-		return c.JSON(http.StatusBadRequest, base.SetErrorMessage("Unauthorized", "No token provided"))
+		return c.JSON(http.StatusBadRequest, base.SetErrorMessage("Unauthorized", "No param token provided"))
 	}
 
 	var oAuthRequestDTO authDTO.OAuthRequestDTO
