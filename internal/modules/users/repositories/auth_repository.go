@@ -15,9 +15,7 @@ type AuthRepository struct {
 }
 
 func NewAuthRepository(db *gorm.DB) *AuthRepository {
-	return &AuthRepository{
-		DB: db,
-	}
+	return &AuthRepository{DB: db}
 }
 
 func (r *AuthRepository) CreateUserAuth(userAuth *models.IamAuth) error {
