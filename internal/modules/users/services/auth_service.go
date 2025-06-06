@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	authDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/dtos"
 	"os"
 	"time"
 
@@ -16,8 +17,8 @@ import (
 )
 
 type Provider interface {
-	Exchange(ctx context.Context, idToken string) (string, error)
-	GetClientSecret(ctx context.Context) (string, error)
+	Exchange(idToken string) (string, error)
+	GetClientSecret() (string, error)
 }
 
 type GoogleProvider struct {
@@ -34,13 +35,15 @@ type AppleProvider struct {
 
 type AuthService struct {
 	userRepo  *userRepository.UserRepository
+	authRepo  *userRepository.AuthRepository
 	providers map[string]Provider
 	jwtSecret []byte
 }
 
-func NewAuthService(repo *userRepository.UserRepository) *AuthService {
+func NewAuthService(userRepo *userRepository.UserRepository, authRepo *userRepository.AuthRepository) *AuthService {
 	return &AuthService{
-		userRepo: repo,
+		userRepo: userRepo,
+		authRepo: authRepo,
 		providers: map[string]Provider{
 			"google": NewGoogleProvider(),
 			"apple":  NewAppleProvider(),
@@ -63,8 +66,8 @@ func NewAppleProvider() *AppleProvider {
 	}
 }
 
-func (g *GoogleProvider) Exchange(ctx context.Context, token string) (string, error) {
-	p, err := idtoken.Validate(ctx, token, g.ClientID)
+func (g *GoogleProvider) Exchange(token string) (string, error) {
+	p, err := idtoken.Validate(context.Background(), token, g.ClientID)
 	if err != nil {
 		return "", fmt.Errorf("google token invalid: %w", err)
 	}
@@ -72,8 +75,8 @@ func (g *GoogleProvider) Exchange(ctx context.Context, token string) (string, er
 	return email, nil
 }
 
-func (a *AppleProvider) Exchange(ctx context.Context, token string) (string, error) {
-	set, err := jwk.Fetch(ctx, a.JWKSUrl)
+func (a *AppleProvider) Exchange(token string) (string, error) {
+	set, err := jwk.Fetch(context.Background(), a.JWKSUrl)
 	if err != nil {
 		return "", fmt.Errorf("apple jwk fetch failed: %w", err)
 	}
@@ -120,11 +123,11 @@ func (a *AppleProvider) Exchange(ctx context.Context, token string) (string, err
 	return email, nil
 }
 
-func (g *GoogleProvider) GetClientSecret(ctx context.Context) (string, error) {
+func (g *GoogleProvider) GetClientSecret() (string, error) {
 	return "", nil
 }
 
-func (a *AppleProvider) GetClientSecret(ctx context.Context) (string, error) {
+func (a *AppleProvider) GetClientSecret() (string, error) {
 	if a.PrivateKey == "" || a.KeyID == "" || a.TeamID == "" || a.ClientID == "" {
 		return "", fmt.Errorf("missing required Apple credentials")
 	}
@@ -159,13 +162,13 @@ func (a *AppleProvider) GetClientSecret(ctx context.Context) (string, error) {
 	return clientSecret, nil
 }
 
-func (s *AuthService) Login(ctx context.Context, providerKey, token string) base.Response {
-	prov, ok := s.providers[providerKey]
+func (s *AuthService) SSOLogin(dto *authDTO.OAuthRequestDTO, token string) base.Response {
+	provider, ok := s.providers[dto.Provider]
 	if !ok {
 		return base.SetErrorMessage("unsupported provider")
 	}
 
-	email, err := prov.Exchange(ctx, token)
+	email, err := provider.Exchange(token)
 	if err != nil {
 		return base.SetErrorMessage("invalid token: " + err.Error())
 	}
@@ -183,23 +186,32 @@ func (s *AuthService) Login(ctx context.Context, providerKey, token string) base
 	if err != nil {
 		return base.SetErrorMessage("sign token error")
 	}
-	return base.SetData(map[string]string{"token": signed}, "login successful")
+
+	SSOLoginResponse := map[string]string{
+		"token": signed,
+	}
+
+	return base.SetData(SSOLoginResponse, "login successful")
 }
 
-func (s *AuthService) ValidateWithProvider(ctx context.Context, providerKey, token string) (bool, error) {
-	prov, ok := s.providers[providerKey]
+func (s *AuthService) ValidateWithProvider(providerKey, token string) (bool, error) { //ToDo :: Function is not used ?!
+	provider, ok := s.providers[providerKey]
 	if !ok {
 		return false, fmt.Errorf("unsupported provider")
 	}
 
 	if providerKey == "apple" {
-		clientSecret, err := prov.GetClientSecret(ctx)
+		clientSecret, err := provider.GetClientSecret()
 		if err != nil {
 			return false, fmt.Errorf("failed to generate client secret: %w", err)
 		}
 		_ = clientSecret
 	}
 
-	_, err := prov.Exchange(ctx, token)
+	if providerKey == "google" {
+		//ToDO :: Google Auth
+	}
+
+	_, err := provider.Exchange(token)
 	return err == nil, err
 }
