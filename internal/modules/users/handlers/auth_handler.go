@@ -30,14 +30,6 @@ func (h *AuthHandler) OAuthLogin(c echo.Context) error {
 		return c.JSON(res.HTTPStatus, res)
 	}
 
-	response := h.AuthService.Login(c.Request().Context(), oAuthRequestDTO.Provider, token)
-	if response.Errors != nil {
-		code := http.StatusUnauthorized
-		if response.Errors == "unsupported provider" {
-			code = http.StatusBadRequest
-		}
-		return c.JSON(code, response)
-	}
-
-	return c.JSON(http.StatusOK, response)
+	response := h.AuthService.SSOLogin(&oAuthRequestDTO, token)
+	return c.JSON(response.HTTPStatus, response)
 }
