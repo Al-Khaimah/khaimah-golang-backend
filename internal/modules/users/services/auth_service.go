@@ -5,9 +5,10 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	authDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/dtos"
 	"os"
 	"time"
+
+	authDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/dtos"
 
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
 	userModel "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/models"
@@ -179,7 +180,8 @@ func (s *AuthService) SSOLogin(dto *authDTO.OAuthRequestDTO, token string) base.
 		return base.SetErrorMessage("db error")
 	}
 
-	if user == nil {
+	userExists := (user != nil)
+	if !userExists {
 		newUser := &userModel.User{
 			Email: email,
 		}
@@ -198,8 +200,20 @@ func (s *AuthService) SSOLogin(dto *authDTO.OAuthRequestDTO, token string) base.
 		return base.SetErrorMessage("sign token error")
 	}
 
-	SSOLoginResponse := map[string]string{
-		"token": signed,
+	var userDetails *authDTO.UserDetailsDTO
+	if userExists {
+		userDetails = &authDTO.UserDetailsDTO{
+			ID:         user.ID.String(),
+			FirstName:  user.FirstName,
+			Email:      user.Email,
+			Categories: user.Categories,
+		}
+	}
+
+	SSOLoginResponse := authDTO.SSOLoginResponse{
+		Token:      signed,
+		UserExists: userExists,
+		User:       userDetails,
 	}
 
 	return base.SetData(SSOLoginResponse, "login successful")
