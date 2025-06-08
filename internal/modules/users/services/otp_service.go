@@ -39,9 +39,11 @@ func (s *OTPService) SendOTP(req *userDTO.SendOTPRequestDTO) base.Response {
 	var err error
 
 	if req.Email != "" {
+		req.Email = utils.FormatEmail(req.Email)
 		identifier = req.Email
 		existingUser, err = s.UserRepo.FindOneByEmail(req.Email)
 	} else {
+		req.Mobile = utils.FormatMobileNumber(req.Mobile)
 		identifier = req.Mobile
 		existingUser, err = s.UserRepo.FindOneByMobile(req.Mobile)
 	}
@@ -71,12 +73,10 @@ func (s *OTPService) SendOTP(req *userDTO.SendOTPRequestDTO) base.Response {
 		}
 
 		if req.Email != "" {
-			newUser.Email = utils.FormatEmail(req.Email)
-			newUser.Mobile = "966512345678"
+			newUser.Mobile = "512345678"
 		} else if req.Mobile != "" {
-			formattedMobile := utils.FormatMobileNumber(req.Mobile)
-			newUser.Email = fmt.Sprintf("mobile_%s@placeholder.com", formattedMobile)
-			newUser.Mobile = formattedMobile
+			newUser.Email = fmt.Sprintf("mobile_%s@placeholder.com", req.Mobile)
+			newUser.Mobile = req.Mobile
 		}
 
 		createdUser, err := s.UserRepo.CreateUser(newUser)
