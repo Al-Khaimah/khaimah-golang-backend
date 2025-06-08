@@ -180,6 +180,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/send-otp": {
+            "post": {
+                "description": "Send a one-time password to the provided email or mobile number",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Send OTP to email or mobile",
+                "parameters": [
+                    {
+                        "description": "Send OTP request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.SendOTPRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_base.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_base.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/signup": {
             "post": {
                 "description": "Registers a user with first name, last name, email, categories, and password",
@@ -212,6 +252,46 @@ const docTemplate = `{
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.SignupRequestDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/verify-otp": {
+            "post": {
+                "description": "Verify the OTP sent to email or mobile and return a JWT token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Verify OTP and get token",
+                "parameters": [
+                    {
+                        "description": "Verify OTP request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.VerifyOTPRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_base.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_base.Response"
                         }
                     }
                 }
@@ -421,6 +501,22 @@ const docTemplate = `{
                 "message": {}
             }
         },
+        "github_com_Al-Khaimah_khaimah-golang-backend_internal_base.Response": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "errors": {},
+                "message_description": {
+                    "type": "string"
+                },
+                "message_title": {
+                    "type": "string"
+                },
+                "message_type": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_categories_dtos.Category": {
             "type": "object",
             "properties": {
@@ -598,6 +694,32 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.SendOTPRequestDTO": {
+            "type": "object",
+            "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "[\"9d671bac-17b0-42cf-b68a-aa908f30b134\"]"
+                    ]
+                },
+                "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                },
+                "first_name": {
+                    "type": "string",
+                    "example": "Ziyad"
+                },
+                "mobile": {
+                    "type": "string",
+                    "example": "+9665XXXXXXX"
+                }
+            }
+        },
         "github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.SignupRequestDTO": {
             "type": "object",
             "required": [
@@ -701,6 +823,26 @@ const docTemplate = `{
                 "last_name": {
                     "type": "string",
                     "example": "Doe"
+                }
+            }
+        },
+        "github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.VerifyOTPRequestDTO": {
+            "type": "object",
+            "required": [
+                "otp"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                },
+                "mobile": {
+                    "type": "string",
+                    "example": "+9665XXXXXXX"
+                },
+                "otp": {
+                    "type": "string",
+                    "example": "1234"
                 }
             }
         },
