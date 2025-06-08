@@ -13,6 +13,7 @@ type User struct {
 	LastName  string         `gorm:"type:varchar(100)" json:"last_name"`
 	UserType  users.UserType `gorm:"type:varchar(20);default:'free'" json:"user_type"`
 	Email     string         `gorm:"type:varchar(255);index" json:"email"`
+	Mobile    string         `gorm:"type:varchar(20);index" json:"mobile"`
 
 	Categories []categories.Category `gorm:"many2many:user_categories" json:"categories"`
 	Bookmarks  []podcasts.Podcast    `gorm:"many2many:user_bookmarks" json:"bookmarks,omitempty"`

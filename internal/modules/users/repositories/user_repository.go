@@ -43,6 +43,26 @@ func (r *UserRepository) FindOneByEmail(email string) (*models.User, error) {
 	return &user, nil
 }
 
+func (r *UserRepository) FindOneByMobile(mobile string) (*models.User, error) {
+	var user models.User
+
+	result := r.DB.
+		Preload("Categories").
+		Preload("Bookmarks").
+		Preload("Downloads").
+		Where("mobile = ?", mobile).
+		First(&user)
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to find user: %w", result.Error)
+	}
+
+	return &user, nil
+}
+
 func (r *UserRepository) FindOneByID(userID uuid.UUID) (*models.User, error) {
 	var user models.User
 
