@@ -6,7 +6,6 @@ import (
 )
 
 func RegisterAllGlobalMiddlewares(e *echo.Echo) {
-	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
