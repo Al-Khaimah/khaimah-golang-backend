@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	. "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/repositories"
 	"io"
 	"math/rand"
 	"net/http"
@@ -56,19 +55,15 @@ func DeleteOTP(ctx context.Context, identifier string) error {
 }
 
 // SendEmailOTP sends an OTP via email using Resend API
-func SendEmailOTP(email, otp string) error {
+func SendEmailOTP(email, otp string, firstName ...string) error {
 	apiKey := config.GetEnv("RESEND_API_KEY")
 	senderEmail := config.GetEnv("RESEND_SENDER_EMAIL")
 	senderName := "الخيمة"
 	endpoint := "https://api.resend.com/emails"
-	user, err := NewUserRepository(config.GetDB()).FindOneByEmail(email)
-	if err != nil {
-		fmt.Errorf("error finding user: %w", err)
-	}
 
-	firstName := ""
-	if user != nil {
-		firstName = user.FirstName
+	name := ""
+	if len(firstName) > 0 && firstName[0] != "" {
+		name = firstName[0]
 	}
 	payload := map[string]interface{}{
 		"from":    fmt.Sprintf("%s <%s>", senderName, senderEmail),
@@ -195,7 +190,7 @@ func SendEmailOTP(email, otp string) error {
                     <tr>
                         <td class="header">الخيمة</td>
                     </tr>
-                    
+
                     <!-- Welcome -->
                     <tr>
                         <td style="padding: 30px;">
@@ -203,7 +198,7 @@ func SendEmailOTP(email, otp string) error {
                             <p class="desc">يا هلا بك، <span style="color: #C13144; font-weight: bold;"> تو ما نورت الخيمة</span> والله! ⛺</p>
                         </td>
                     </tr>
-                    
+
                     <!-- OTP -->
                     <tr>
                         <td style="padding: 0 30px 30px 30px;">
@@ -214,7 +209,7 @@ func SendEmailOTP(email, otp string) error {
                             </div>
                         </td>
                     </tr>
-                    
+
                     <!-- Share Section -->
                     <tr>
                         <td style="padding: 0 30px 30px 30px;">
@@ -233,7 +228,7 @@ func SendEmailOTP(email, otp string) error {
                             </div>
                         </td>
                     </tr>
-                    
+
                     <!-- Download Button -->
                     <tr>
                         <td style="padding: 0 30px 30px 30px; text-align: center;">
@@ -242,7 +237,7 @@ func SendEmailOTP(email, otp string) error {
                             </a>
                         </td>
                     </tr>
-                    
+
                     <!-- Contact Section -->
                     <tr>
                         <td style="padding: 0 30px 30px 30px;">
@@ -255,7 +250,7 @@ func SendEmailOTP(email, otp string) error {
                             </div>
                         </td>
                     </tr>
-                    
+
                     <!-- Footer -->
                     <tr>
                         <td class="footer">
@@ -265,14 +260,14 @@ func SendEmailOTP(email, otp string) error {
                             </p>
                         </td>
                     </tr>
-                    
+
                 </table>
             </td>
         </tr>
     </table>
 </body>
 </html>
-    `, firstName, otp),
+    `, name, otp),
 	}
 
 	body, err := json.Marshal(payload)
@@ -303,24 +298,20 @@ func SendEmailOTP(email, otp string) error {
 }
 
 // SendMobileOTP sends an OTP via WhatsApp using SendMsg.dev
-func SendMobileOTP(mobile, otp string) error {
+func SendMobileOTP(mobile, otp string, firstName ...string) error {
 	formattedMobile := FormatMobileNumber(mobile)
 
 	apiToken := config.GetEnv("SENDMSG_API_TOKEN")
 	endpoint := "https://sendmsg.dev/message"
-	user, err := NewUserRepository(config.GetDB()).FindOneByMobile(formattedMobile)
-	if err != nil {
-		return fmt.Errorf("error finding user: %w", err)
-	}
 
-	firstName := ""
-	if user != nil {
-		firstName = user.FirstName
+	name := ""
+	if len(firstName) > 0 && firstName[0] != "" {
+		name = firstName[0]
 	}
 
 	payload := map[string]interface{}{
 		"to":      []string{formattedMobile},
-		"message": fmt.Sprintf("رمز التحقق حقك: %s\n\nأرحب %s، تو ما نورت الخيمة! ⛺ \n\nحسابك جاهز، تقدر تبدأ تستمع للبودكاستات وتعيش الجو.\n\nعندك خوي مسوي مشغول وما عنده وقت يقرا؟ 🤷‍♂️\nأو ما يحب تويتر؟ 🐦🚫\nأو شايب الجرايد معد صاروا يوصلون له؟ 👴📰\n\nشاركهم التطبيق وخلهم يسمعون الأخبار اللي تهمهم بضغطة زر وحده!\n\nإذا جازلتلك الخيمة، قيمنا في الاب ستور ❤️🌟\n:https://apps.apple.com/sa/app/id6745527443\n\nأي استفسار أو واجهتك مشكلة؟ كلمنا مباشرة على هالواتساب: 0591434366 (وتقدر ترد على نفس الرسالة).", otp, firstName),
+		"message": fmt.Sprintf("رمز التحقق حقك: %s\n\nأرحب %s، تو ما نورت الخيمة! ⛺ \n\nحسابك جاهز، تقدر تبدأ تستمع للبودكاستات وتعيش الجو.\n\nعندك خوي مسوي مشغول وما عنده وقت يقرا؟ 🤷‍♂️\nأو ما يحب تويتر؟ 🐦🚫\nأو شايب الجرايد معد صاروا يوصلون له؟ 👴📰\n\nشاركهم التطبيق وخلهم يسمعون الأخبار اللي تهمهم بضغطة زر وحده!\n\nإذا جازلتلك الخيمة، قيمنا في الاب ستور ❤️🌟\n:https://apps.apple.com/sa/app/id6745527443\n\nأي استفسار أو واجهتك مشكلة؟ كلمنا مباشرة على هالواتساب: 0591434366 (وتقدر ترد على نفس الرسالة).", otp, name),
 		"token":   apiToken,
 	}
 

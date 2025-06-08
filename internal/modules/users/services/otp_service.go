@@ -96,10 +96,10 @@ func (s *OTPService) SendOTP(req *userDTO.SendOTPRequestDTO) base.Response {
 
 	var sendErr error
 	if req.Email != "" {
-		sendErr = utils.SendEmailOTP(req.Email, otp)
+		sendErr = utils.SendEmailOTP(req.Email, otp, req.FirstName)
 	} else {
 		formattedMobile := utils.FormatMobileNumber(req.Mobile)
-		sendErr = utils.SendMobileOTP(formattedMobile, otp)
+		sendErr = utils.SendMobileOTP(formattedMobile, otp, req.FirstName)
 	}
 
 	if sendErr != nil {
