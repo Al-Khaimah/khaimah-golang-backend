@@ -3,6 +3,17 @@ definitions:
     properties:
       message: {}
     type: object
+  github_com_Al-Khaimah_khaimah-golang-backend_internal_base.Response:
+    properties:
+      data: {}
+      errors: {}
+      message_description:
+        type: string
+      message_title:
+        type: string
+      message_type:
+        type: string
+    type: object
   github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_categories_dtos.Category:
     properties:
       description:
@@ -123,6 +134,24 @@ definitions:
         example: eyJhbGciOiJIUzI1Ni...
         type: string
     type: object
+  github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.SendOTPRequestDTO:
+    properties:
+      categories:
+        example:
+        - '["9d671bac-17b0-42cf-b68a-aa908f30b134"]'
+        items:
+          type: string
+        type: array
+      email:
+        example: user@example.com
+        type: string
+      first_name:
+        example: Ziyad
+        type: string
+      mobile:
+        example: +9665XXXXXXX
+        type: string
+    type: object
   github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.SignupRequestDTO:
     properties:
       categories:
@@ -196,6 +225,20 @@ definitions:
         type: string
     required:
     - categories
+    type: object
+  github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.VerifyOTPRequestDTO:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      mobile:
+        example: +9665XXXXXXX
+        type: string
+      otp:
+        example: "1234"
+        type: string
+    required:
+    - otp
     type: object
   gorm.DeletedAt:
     properties:
@@ -316,6 +359,32 @@ paths:
       summary: Logout current user
       tags:
       - users
+  /auth/send-otp:
+    post:
+      consumes:
+      - application/json
+      description: Send a one-time password to the provided email or mobile number
+      parameters:
+      - description: Send OTP request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.SendOTPRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_base.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_base.Response'
+      summary: Send OTP to email or mobile
+      tags:
+      - auth
   /auth/signup:
     post:
       consumes:
@@ -341,6 +410,32 @@ paths:
       summary: Create a new user
       tags:
       - users
+  /auth/verify-otp:
+    post:
+      consumes:
+      - application/json
+      description: Verify the OTP sent to email or mobile and return a JWT token
+      parameters:
+      - description: Verify OTP request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_modules_users_dtos.VerifyOTPRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_base.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Al-Khaimah_khaimah-golang-backend_internal_base.Response'
+      summary: Verify OTP and get token
+      tags:
+      - auth
   /user/bookmarks:
     get:
       description: Retrieves a list of podcasts bookmarked by the authenticated user

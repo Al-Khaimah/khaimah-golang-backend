@@ -73,7 +73,7 @@ func (s *UserService) CreateUser(user *userDTO.SignupRequestDTO) base.Response {
 		return base.SetErrorMessage("فشل في إنشاء توثيق المستخدم")
 	}
 
-	token, err := generateJWT(createdUser)
+	token, err := GenerateJWT(createdUser)
 	if err != nil {
 		return base.SetErrorMessage("فشل في إنشاء الرمز")
 	}
@@ -111,7 +111,7 @@ func (s *UserService) LoginUser(user *userDTO.LoginRequestDTO) base.Response {
 		return base.SetErrorMessage("كلمة المرور غير صحيحة")
 	}
 
-	token, err := generateJWT(existingUser)
+	token, err := GenerateJWT(existingUser)
 	if err != nil {
 		return base.SetErrorMessage("فشل في إنشاء الرمز")
 	}
@@ -134,7 +134,7 @@ func (s *UserService) LoginUser(user *userDTO.LoginRequestDTO) base.Response {
 	return base.SetData(loginResponse, "Logged in successfully")
 }
 
-func generateJWT(user *models.User) (string, error) {
+func GenerateJWT(user *models.User) (string, error) {
 	jwtSecret := config.GetEnv("JWT_SECRET", "alkhaimah123")
 	claims := jwt.MapClaims{
 		"user_id": user.ID.String(),

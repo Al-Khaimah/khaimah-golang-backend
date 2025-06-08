@@ -49,6 +49,28 @@ func FormatEmail(email string) string {
 	return strings.ToLower(strings.TrimSpace(email))
 }
 
+// FormatMobileNumber formats a mobile number to the standard Saudi Arabia format (966xxxxxxxxx)
+// It handles the following cases:
+// - 5006054839 -> 966506054839 (add country code)
+// - 0506054839 -> 966506054839 (replace leading 0 with country code)
+// - +966506054839 -> 966506054839 (remove + sign)
+func FormatMobileNumber(mobile string) string {
+	mobile = strings.TrimSpace(mobile)
+
+	mobile = strings.TrimPrefix(mobile, "+")
+
+	if strings.HasPrefix(mobile, "0") {
+		mobile = mobile[1:]
+	}
+	if !strings.HasPrefix(mobile, "966") {
+		if len(mobile) >= 9 && (strings.HasPrefix(mobile, "5") || strings.HasPrefix(mobile, "4") || strings.HasPrefix(mobile, "3")) {
+			mobile = "966" + mobile
+		}
+	}
+
+	return mobile
+}
+
 func ConvertCategoriesToStringIDs(categories []models.Category) []string {
 	categoryIDs := make([]string, len(categories))
 	for i, category := range categories {
@@ -63,12 +85,18 @@ func ConvertIDsToCategories(categoryIDs []string) []models.Category {
 	for _, id := range categoryIDs {
 		uid, err := uuid.Parse(id)
 		if err != nil {
+			fmt.Printf("Warning: Invalid category ID format: %s\n", id)
 			continue
 		}
 
 		categoryRepo := categories.NewCategoryRepository(config.GetDB())
 		category, err := categoryRepo.FindCategoryByID(uid)
-		if err != nil || category == nil {
+		if err != nil {
+			fmt.Printf("Warning: Error finding category with ID %s: %v\n", id, err)
+			continue
+		}
+		if category == nil {
+			fmt.Printf("Warning: Category with ID %s not found\n", id)
 			continue
 		}
 
