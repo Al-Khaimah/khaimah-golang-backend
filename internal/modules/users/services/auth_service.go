@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
+	userModel "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/models"
 	userRepository "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/repositories"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/lestrrat-go/jwx/jwk"
@@ -173,9 +174,19 @@ func (s *AuthService) SSOLogin(dto *authDTO.OAuthRequestDTO, token string) base.
 		return base.SetErrorMessage("invalid token: " + err.Error())
 	}
 
-	user, err := s.userRepo.FindOrCreateByEmail(email)
+	user, err := s.userRepo.FindOneByEmail(email)
 	if err != nil {
 		return base.SetErrorMessage("db error")
+	}
+
+	if user == nil {
+		newUser := &userModel.User{
+			Email: email,
+		}
+		user, err = s.userRepo.CreateUser(newUser)
+		if err != nil {
+			return base.SetErrorMessage("failed to create user")
+		}
 	}
 
 	claims := jwt.MapClaims{

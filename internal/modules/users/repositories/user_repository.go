@@ -3,6 +3,7 @@ package users
 import (
 	"errors"
 	"fmt"
+	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base/utils"
 
 	podcastModel "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/models"
 
@@ -86,6 +87,17 @@ func (r *UserRepository) CreateUser(user *models.User) (*models.User, error) {
 	if result.Error != nil {
 		return nil, fmt.Errorf("failed to create user: %w", result.Error)
 	}
+
+	identity := ""
+	if user.Email != "" {
+		identity = user.Email
+	}
+	if user.Mobile != "" {
+		identity = user.Mobile
+	}
+
+	slackMessage := fmt.Sprintf("🚀 New user account created:\n%s (%s)", user.FirstName, identity)
+	_ = utils.SendSlackNotification(slackMessage)
 
 	return user, nil
 }
