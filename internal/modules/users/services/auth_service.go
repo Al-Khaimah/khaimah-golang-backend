@@ -5,9 +5,10 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	authDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/dtos"
 	"os"
 	"time"
+
+	DTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/dtos"
 
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
 	userModel "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/models"
@@ -163,7 +164,7 @@ func (a *AppleProvider) GetClientSecret() (string, error) {
 	return clientSecret, nil
 }
 
-func (s *AuthService) SSOLogin(dto *authDTO.OAuthRequestDTO, token string) base.Response {
+func (s *AuthService) SSOLogin(dto *DTO.OAuthRequestDTO, token string) base.Response {
 	provider, ok := s.providers[dto.Provider]
 	if !ok {
 		return base.SetErrorMessage("unsupported provider")
@@ -179,7 +180,8 @@ func (s *AuthService) SSOLogin(dto *authDTO.OAuthRequestDTO, token string) base.
 		return base.SetErrorMessage("db error")
 	}
 
-	if user == nil {
+	userExists := (user != nil)
+	if !userExists {
 		newUser := &userModel.User{
 			Email: email,
 		}
@@ -198,8 +200,23 @@ func (s *AuthService) SSOLogin(dto *authDTO.OAuthRequestDTO, token string) base.
 		return base.SetErrorMessage("sign token error")
 	}
 
-	SSOLoginResponse := map[string]string{
-		"token": signed,
+	var userDetails *DTO.UserBaseDTO
+	if userExists {
+		userDetails = &DTO.UserBaseDTO{
+			ID:         user.ID.String(),
+			FirstName:  user.FirstName,
+			Email:      user.Email,
+			LastName:   user.LastName,
+			UserType:   user.UserType,
+			Mobile:     user.Mobile,
+			Categories: user.Categories,
+		}
+	}
+
+	SSOLoginResponse := DTO.SSOLoginResponse{
+		Token:      signed,
+		UserExists: userExists,
+		User:       userDetails,
 	}
 
 	return base.SetData(SSOLoginResponse, "login successful")
