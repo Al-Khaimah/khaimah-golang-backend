@@ -164,17 +164,12 @@ func (s *OTPService) VerifyOTP(req *userDTO.VerifyOTPRequestDTO) base.Response {
 		return base.SetErrorMessage("فشل في إنشاء الرمز")
 	}
 
-	var categoryIDs []string
-	for _, category := range user.Categories {
-		categoryIDs = append(categoryIDs, category.ID.String())
-	}
-
 	response := userDTO.VerifyOTPResponseDTO{
 		ID:         user.ID.String(),
 		FirstName:  user.FirstName,
 		Email:      user.Email,
 		Mobile:     user.Mobile,
-		Categories: categoryIDs,
+		Categories: user.Categories,
 		Token:      tokenString,
 		ExpiresAt:  "never",
 	}
