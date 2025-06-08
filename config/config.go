@@ -13,10 +13,10 @@ func LoadEnv() {
 	}
 }
 
-func GetEnv(key string, defaultValue string) string {
+func GetEnv(key string, defaultValue ...string) string {
 	value, exists := os.LookupEnv(key)
-	if !exists {
-		return defaultValue
+	if !exists && len(defaultValue) > 0 {
+		return defaultValue[0]
 	}
 	return value
 }
