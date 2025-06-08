@@ -4,6 +4,7 @@ import (
 	categoryDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/dtos"
 	categories "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/models"
 	podcastDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/dtos"
+	users "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/enums"
 )
 
 // SignupRequestDTO defines the body for creating a new user.
@@ -102,5 +103,15 @@ type CreateSSOUserResponseDTO struct {
 	ID         string                `json:"id" example:"xyz789"`
 	FirstName  string                `json:"first_name" example:"Alice"`
 	Email      string                `json:"email" example:"alice@example.com"`
+	Categories []categories.Category `json:"categories"`
+}
+
+type UserBaseDTO struct {
+	ID         string                `json:"id"`
+	FirstName  string                `json:"first_name"`
+	LastName   string                `json:"last_name"`
+	UserType   users.UserType        `json:"user_type"`
+	Email      string                `json:"email"`
+	Mobile     string                `json:"mobile"`
 	Categories []categories.Category `json:"categories"`
 }
