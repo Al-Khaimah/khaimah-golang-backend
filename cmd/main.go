@@ -1,7 +1,10 @@
 package main
 
 import (
+	"log"
+
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
+	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base/redis"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/middlewares"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/migrations"
 
@@ -21,6 +24,10 @@ func main() {
 	db := config.GetDB()
 	migrations.Migrate()
 	migrations.SeedDatabase(db)
+
+	if err := redis.InitRedis(); err != nil {
+		log.Printf("❌ Warning: Failed to initialize Redis: %v", err)
+	}
 
 	routes.RegisterAllRoutes(e, db)
 
