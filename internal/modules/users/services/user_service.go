@@ -1,10 +1,12 @@
 package users
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/Al-Khaimah/khaimah-golang-backend/config"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
+	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base/redis"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base/utils"
 	userDTO "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/dtos"
 	users "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/users/enums"
@@ -250,6 +252,18 @@ func (s *UserService) UpdateUserPreferences(userID string, updateData userDTO.Up
 	err = s.UserRepo.UpdateUserPreferences(user, newCategories)
 	if err != nil {
 		return nil, fmt.Errorf("فشل في تحديث التفضيلات")
+	}
+
+	cacheKeyPattern := fmt.Sprintf("recommended_podcasts:%s:*", userID)
+	ctx := context.Background()
+	redisClient := redis.GetRedisClient()
+	if redisClient != nil {
+		keys, err := redisClient.Keys(ctx, cacheKeyPattern).Result()
+		if err == nil {
+			if len(keys) > 0 {
+				redisClient.Del(ctx, keys...).Result()
+			}
+		}
 	}
 
 	preferencesResponse := userDTO.UpdatePreferencesDTO{
