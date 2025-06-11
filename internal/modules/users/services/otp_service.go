@@ -73,7 +73,8 @@ func (s *OTPService) SendOTP(req *userDTO.SendOTPRequestDTO) base.Response {
 		}
 
 		if req.Email != "" {
-			newUser.Mobile = "512345678"
+			newUser.Mobile = ""
+			newUser.Email = req.Email
 		} else if req.Mobile != "" {
 			newUser.Email = fmt.Sprintf("mobile_%s@placeholder.com", req.Mobile)
 			newUser.Mobile = req.Mobile
