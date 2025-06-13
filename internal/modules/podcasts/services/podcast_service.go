@@ -1,21 +1,16 @@
 package podcasts
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
-	"sort"
-	"strings"
-	"time"
-
 	"github.com/Al-Khaimah/khaimah-golang-backend/config"
 	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base"
-	"github.com/Al-Khaimah/khaimah-golang-backend/internal/base/redis"
 	categoryRepository "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/categories/repositories"
 	podcastsDto "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/dtos"
 	podcastsModels "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/models"
 	podcasts "github.com/Al-Khaimah/khaimah-golang-backend/internal/modules/podcasts/repositories"
 	"github.com/google/uuid"
+	"sort"
+	"strings"
 )
 
 type PodcastService struct {
@@ -65,16 +60,16 @@ func (s *PodcastService) GetRecommendedPodcasts(userID string, userCategoriesIDs
 		return base.SetErrorMessage("Invalid user ID format", err)
 	}
 
-	cacheKey := generateRecommendedPodcastsCacheKey(userID, userCategoriesIDs)
-	ctx := context.Background()
-	cachedData, err := redis.Get(ctx, cacheKey)
-	if err == nil {
-		var response []podcastsDto.GetRecommendedPodcastsResponseDto
-		if err := json.Unmarshal([]byte(cachedData), &response); err == nil {
-			return base.SetData(response)
+	/*	cacheKey := generateRecommendedPodcastsCacheKey(userID, userCategoriesIDs)
+		ctx := context.Background()
+		cachedData, err := redis.Get(ctx, cacheKey)
+		if err == nil {
+			var response []podcastsDto.GetRecommendedPodcastsResponseDto
+			if err := json.Unmarshal([]byte(cachedData), &response); err == nil {
+				return base.SetData(response)
+			}
 		}
-	}
-
+	*/
 	var categoriesUUID []uuid.UUID
 	for _, id := range userCategoriesIDs {
 		catID, err := uuid.Parse(id)
@@ -120,11 +115,11 @@ func (s *PodcastService) GetRecommendedPodcasts(userID string, userCategoriesIDs
 		response = append(response, group)
 	}
 
-	responseJSON, err := json.Marshal(response)
-	if err == nil {
-		redis.SetWithTTL(ctx, cacheKey, string(responseJSON), 2*time.Hour)
-	}
-
+	/*	responseJSON, err := json.Marshal(response)
+		if err == nil {
+			redis.SetWithTTL(ctx, cacheKey, string(responseJSON), 2*time.Hour)
+		}
+	*/
 	return base.SetData(response)
 }
 
