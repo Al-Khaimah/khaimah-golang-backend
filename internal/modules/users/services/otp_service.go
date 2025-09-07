@@ -123,6 +123,7 @@ func (s *OTPService) VerifyOTP(req *userDTO.VerifyOTPRequestDTO) base.Response {
 	var err error
 
 	if req.Email != "" {
+		req.Email = utils.FormatEmail(req.Email)
 		identifier = req.Email
 		user, err = s.UserRepo.FindOneByEmail(req.Email)
 	} else {
