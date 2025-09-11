@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net/http"
 	"time"
+    "strings"
 
 	"github.com/Al-Khaimah/khaimah-golang-backend/config"
 	redisClient "github.com/Al-Khaimah/khaimah-golang-backend/internal/base/redis"
@@ -297,22 +298,29 @@ func SendEmailOTP(email, otp string, firstName ...string) error {
 	return nil
 }
 
-// SendMobileOTP sends an OTP via WhatsApp using SendMsg.dev
+// SendMobileOTP sends an OTP via WhatsApp using WasenderAPI
 func SendMobileOTP(mobile, otp string, firstName ...string) error {
 	formattedMobile := FormatMobileNumber(mobile)
 
-	apiToken := config.GetEnv("SENDMSG_API_TOKEN")
-	endpoint := "https://sendmsg.dev/message"
+	apiToken := config.GetEnv("WASENDER_API_TOKEN")
+	endpoint := "https://wasenderapi.com/api/send-message"
 
 	name := ""
 	if len(firstName) > 0 && firstName[0] != "" {
 		name = firstName[0]
 	}
 
+	msg := fmt.Sprintf(
+		"رمز التحقق حقك: %s\n\nأرحب %s، تو ما نورت الخيمة! ⛺ \n\nحسابك جاهز، تقدر تبدأ تستمع للبودكاستات وتعيش الجو.\n\nعندك خوي مسوي مشغول وما عنده وقت يقرا؟ 🤷‍♂️\nأو ما يحب تويتر؟ 🐦🚫\nأو شايب الجرايد معد صاروا يوصلون له؟ 👴📰\n\nشاركهم التطبيق وخلهم يسمعون الأخبار اللي تهمهم بضغطة زر وحده!\n\nإذا جازلتلك الخيمة، قيمنا في الاب ستور ❤️🌟\n:https://apps.apple.com/sa/app/id6745527443\n\nأي استفسار أو واجهتك مشكلة؟ كلمنا مباشرة على هالواتساب: 0591434366 (وتقدر ترد على نفس الرسالة).",
+		otp, name,
+	)
+
+	if !strings.HasPrefix(formattedMobile, "+") {
+		formattedMobile = "+" + formattedMobile
+	}
 	payload := map[string]interface{}{
-		"token":   apiToken,
-		"to":      formattedMobile,
-		"message": fmt.Sprintf("رمز التحقق حقك: %s\n\nأرحب %s، تو ما نورت الخيمة! ⛺ \n\nحسابك جاهز، تقدر تبدأ تستمع للبودكاستات وتعيش الجو.\n\nعندك خوي مسوي مشغول وما عنده وقت يقرا؟ 🤷‍♂️\nأو ما يحب تويتر؟ 🐦🚫\nأو شايب الجرايد معد صاروا يوصلون له؟ 👴📰\n\nشاركهم التطبيق وخلهم يسمعون الأخبار اللي تهمهم بضغطة زر وحده!\n\nإذا جازلتلك الخيمة، قيمنا في الاب ستور ❤️🌟\n:https://apps.apple.com/sa/app/id6745527443\n\nأي استفسار أو واجهتك مشكلة؟ كلمنا مباشرة على هالواتساب: 0591434366 (وتقدر ترد على نفس الرسالة).", otp, name),
+		"to":   formattedMobile, //+9665xxxxxxx
+		"text": msg,
 	}
 
 	body, err := json.Marshal(payload)
@@ -324,6 +332,7 @@ func SendMobileOTP(mobile, otp string, firstName ...string) error {
 	if err != nil {
 		return err
 	}
+	req.Header.Set("Authorization", "Bearer "+apiToken)
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{Timeout: 10 * time.Second}
@@ -334,9 +343,16 @@ func SendMobileOTP(mobile, otp string, firstName ...string) error {
 	defer resp.Body.Close()
 
 	respBody, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusAccepted {
+		return fmt.Errorf("failed to send OTP via WhatsApp: status %d - [%s]", resp.StatusCode, string(respBody))
+	}
 
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to send OTP via WhatsApp: status code %d - [%s]", resp.StatusCode, string(respBody))
+	var r struct {
+		Success bool            `json:"success"`
+		Data    json.RawMessage `json:"data"`
+	}
+	if err := json.Unmarshal(respBody, &r); err == nil && !r.Success {
+		return fmt.Errorf("failed to send OTP via WhatsApp: [%s]", string(respBody))
 	}
 
 	return nil
